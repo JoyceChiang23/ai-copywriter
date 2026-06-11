@@ -257,6 +257,36 @@
         .platform-field { display: none; }
         .platform-field.show { display: block; }
 
+        /* ---- Advanced section ---- */
+        .advanced-section {
+            background: #f5f3ff;
+            border: 1px solid rgba(99,102,241,0.12);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            margin-top: 16px;
+        }
+
+        .advanced-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #7c3aed;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 12px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .form-row .form-group { margin-top: 0; }
+
+        @media (max-width: 480px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+
         /* ---- Tip ---- */
         .tip-box {
             display: flex;
@@ -443,6 +473,8 @@
             white-space: pre-wrap;
             word-break: break-word;
             min-height: 200px;
+            max-height: 620px;
+            overflow-y: auto;
         }
 
         .result-actions {
@@ -590,6 +622,51 @@
                         </select>
                     </div>
 
+                    <!-- 進階設定 -->
+                    <div class="advanced-section">
+                        <div class="advanced-label">⚙ 進階設定</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">輸出長度</label>
+                                <select id="outputLength" class="form-control">
+                                    <option value="standard">標準版</option>
+                                    <option value="short">短版</option>
+                                    <option value="detailed">詳細版</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">版本數量</label>
+                                <select id="versions" class="form-control">
+                                    <option value="1">1 版</option>
+                                    <option value="3">3 版</option>
+                                    <option value="5">5 版</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row" style="margin-top:10px;">
+                            <div class="form-group">
+                                <label class="form-label">使用目的</label>
+                                <select id="purpose" class="form-control">
+                                    <option value="post">發文</option>
+                                    <option value="ad">廣告投放</option>
+                                    <option value="presentation">簡報提案</option>
+                                    <option value="product-page">商品頁</option>
+                                    <option value="dm-sales">私訊銷售</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">CTA 目的</label>
+                                <select id="ctaGoal" class="form-control">
+                                    <option value="comment">引導留言</option>
+                                    <option value="dm">引導私訊</option>
+                                    <option value="link">點擊連結</option>
+                                    <option value="order">直接下單</option>
+                                    <option value="consultation">預約諮詢</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
                     <button type="submit" id="generateBtn" class="btn-generate">
                         ✦ 生成文案
                     </button>
@@ -682,9 +759,10 @@
         txt.textContent = '無法連接伺服器';
     }
 
-    // Show platform field when product-desc selected
+    // 販售平台：只在商品描述、行銷文案時顯示
     document.getElementById('copyType').addEventListener('change', function () {
-        document.getElementById('platformField').classList.toggle('show', this.value === 'product-desc');
+        const showPlatform = ['product-desc', 'marketing-copy'].includes(this.value);
+        document.getElementById('platformField').classList.toggle('show', showPlatform);
     });
 
     // Form submit
@@ -694,14 +772,18 @@
     });
 
     async function generate() {
-        const copyType   = document.getElementById('copyType').value;
-        const requirement= document.getElementById('requirement').value;
-        const audience   = document.getElementById('audience').value;
-        const tone       = document.getElementById('tone').value;
-        const platform   = document.getElementById('platform').value;
-        const btn        = document.getElementById('generateBtn');
-        const errorMsg   = document.getElementById('errorMsg');
-        const successMsg = document.getElementById('successMsg');
+        const copyType    = document.getElementById('copyType').value;
+        const requirement = document.getElementById('requirement').value;
+        const audience    = document.getElementById('audience').value;
+        const tone        = document.getElementById('tone').value;
+        const platform    = document.getElementById('platform').value;
+        const outputLength= document.getElementById('outputLength').value;
+        const versions    = document.getElementById('versions').value;
+        const purpose     = document.getElementById('purpose').value;
+        const ctaGoal     = document.getElementById('ctaGoal').value;
+        const btn         = document.getElementById('generateBtn');
+        const errorMsg    = document.getElementById('errorMsg');
+        const successMsg  = document.getElementById('successMsg');
 
         errorMsg.classList.remove('show');
         successMsg.classList.remove('show');
@@ -718,7 +800,7 @@
             const res  = await fetch(`${API_BASE}/api/generate-copy`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ copyType, requirement, audience, tone, platform })
+                body: JSON.stringify({ copyType, requirement, audience, tone, platform, outputLength, versions, purpose, ctaGoal })
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || '生成失敗');
