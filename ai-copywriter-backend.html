@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 文案生成器 | Joyce 的工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .status-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .status-bar.connected {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .status-bar.disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .main-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .output-box {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 150px;
+            position: relative;
+        }
+
+        .output-text {
+            color: #333;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .output-box:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+        }
+
+        .error-message {
+            color: #e53e3e;
+            font-size: 14px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #fed7d7;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .placeholder-output {
+            color: #999;
+            font-style: italic;
+        }
+
+        .toggle-platform {
+            display: none;
+        }
+
+        .toggle-platform.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .success-message {
+            color: #22c55e;
+            font-size: 14px;
+            padding: 10px;
+            background: #dcfce7;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .main-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ AI 文案生成器</h1>
+            <p>為你的內容、企劃、商品描述生成專業文案</p>
+        </div>
+
+        <!-- 連接狀態 -->
+        <div class="status-bar" id="statusBar">
+            🔄 檢查伺服器連接中...
+        </div>
+
+        <div class="main-wrapper">
+            <!-- 輸入區 -->
+            <div class="card">
+                <div class="section-title">設定與需求</div>
+
+                <div class="info-box">
+                    💡 選擇文案類型並輸入需求，AI 幫你快速生成專業文案
+                </div>
+
+                <form id="copywriterForm">
+                    <!-- 文案類型選擇 -->
+                    <div class="form-group">
+                        <label for="copyType">選擇文案類型</label>
+                        <select id="copyType" required>
+                            <option value="">-- 請選擇 --</option>
+                            <option value="ig-post">📸 IG 貼文文案</option>
+                            <option value="reels-script">🎬 Reels 腳本</option>
+                            <option value="stories">📖 限動文案</option>
+                            <option value="plan">📋 企劃書（5 頁）</option>
+                            <option value="product-desc">🛍️ 商品描述</option>
+                            <option value="marketing-copy">📢 行銷文案</option>
+                        </select>
+                    </div>
+
+                    <!-- 商品描述平台選擇 -->
+                    <div class="form-group toggle-platform" id="platformToggle">
+                        <label for="platform">選擇平台</label>
+                        <select id="platform">
+                            <option value="shoping">蝦皮購物</option>
+                            <option value="momo">momo 購物網</option>
+                            <option value="pchome">PChome</option>
+                            <option value="shopee-global">Shopee 國際</option>
+                            <option value="custom-site">自建官網</option>
+                        </select>
+                    </div>
+
+                    <!-- 文案需求描述 -->
+                    <div class="form-group">
+                        <label for="requirement">描述你的需求</label>
+                        <textarea 
+                            id="requirement" 
+                            placeholder="例如：幫我寫一篇房間改造前後對比的 IG 文案，要突出省錢和 DIY 改造的樂趣..."
+                            required
+                        ></textarea>
+                    </div>
+
+                    <!-- 目標客群 -->
+                    <div class="form-group">
+                        <label for="audience">目標客群</label>
+                        <select id="audience" required>
+                            <option value="">-- 請選擇 --</option>
+                            <option value="young-women">年輕女性（18-35 歲）</option>
+                            <option value="professionals">上班族/專業人士</option>
+                            <option value="entrepreneurs">創業者/小老闆</option>
+                            <option value="home-lovers">居家愛好者</option>
+                            <option value="general">一般大眾</option>
+                        </select>
+                    </div>
+
+                    <!-- 語氣風格 -->
+                    <div class="form-group">
+                        <label for="tone">語氣風格</label>
+                        <select id="tone" required>
+                            <option value="professional">專業正式</option>
+                            <option value="friendly">溫暖親切</option>
+                            <option value="humorous">幽默有趣</option>
+                            <option value="inspirational">勵志鼓舞</option>
+                            <option value="casual">隨興輕鬆</option>
+                        </select>
+                    </div>
+
+                    <!-- 提交按鈕 -->
+                    <button type="submit" id="generateBtn">
+                        生成文案
+                    </button>
+
+                    <!-- 訊息 -->
+                    <div class="error-message" id="errorMessage"></div>
+                    <div class="success-message" id="successMessage"></div>
+                </form>
+            </div>
+
+            <!-- 輸出區 -->
+            <div class="card">
+                <div class="section-title">生成結果</div>
+
+                <div class="output-box" id="outputBox">
+                    <div class="placeholder-output">
+                        🎯 在左邊填好設定，點擊「生成文案」後，AI 的創意文案就會出現在這裡
+                    </div>
+                    <button class="copy-btn" id="copyBtn" onclick="copyToClipboard()" style="display: none;">
+                        📋 複製
+                    </button>
+                </div>
+
+                <div style="margin-top: 15px; font-size: 12px; color: #999;">
+                    💡 小提示：如果結果不滿意，你可以調整需求和風格再試一次
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API 伺服器地址
+        const API_URL = 'http://localhost:3000/api/generate-copy';
+        const HEALTH_CHECK_URL = 'http://localhost:3000/health';
+
+        // 初始化：檢查伺服器連接
+        window.addEventListener('load', checkServerConnection);
+
+        // 檢查伺服器連接
+        async function checkServerConnection() {
+            const statusBar = document.getElementById('statusBar');
+            try {
+                const response = await fetch(HEALTH_CHECK_URL);
+                if (response.ok) {
+                    statusBar.textContent = '✅ 伺服器已連接';
+                    statusBar.className = 'status-bar connected';
+                } else {
+                    showServerError();
+                }
+            } catch (error) {
+                showServerError();
+            }
+        }
+
+        function showServerError() {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.textContent = '❌ 無法連接伺服器。請確認 server.js 有在運行（在 CMD 執行：node server.js）';
+            statusBar.className = 'status-bar disconnected';
+        }
+
+        // 平台選擇顯示/隱藏
+        document.getElementById('copyType').addEventListener('change', function() {
+            const platformToggle = document.getElementById('platformToggle');
+            if (this.value === 'product-desc') {
+                platformToggle.classList.add('show');
+            } else {
+                platformToggle.classList.remove('show');
+            }
+        });
+
+        // 表單提交
+        document.getElementById('copywriterForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const copyType = document.getElementById('copyType').value;
+            const requirement = document.getElementById('requirement').value;
+            const audience = document.getElementById('audience').value;
+            const tone = document.getElementById('tone').value;
+            const platform = document.getElementById('platform').value;
+            
+            const generateBtn = document.getElementById('generateBtn');
+            const outputBox = document.getElementById('outputBox');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+
+            // 清空訊息
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
+
+            // 顯示載入中
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="loading"></span>生成中...';
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        copyType,
+                        requirement,
+                        audience,
+                        tone,
+                        platform
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || '生成失敗');
+                }
+
+                // 顯示結果
+                const generatedText = data.copy;
+                outputBox.innerHTML = `
+                    <div class="output-text">${escapeHtml(generatedText)}</div>
+                    <button class="copy-btn" onclick="copyToClipboard()" style="display: block;">
+                        📋 複製
+                    </button>
+                `;
+
+                // 儲存文案供複製
+                window.currentOutput = generatedText;
+
+                // 顯示成功訊息
+                successMessage.textContent = '✅ 文案生成成功！';
+                successMessage.classList.add('show');
+
+            } catch (error) {
+                console.error('錯誤：', error);
+                errorMessage.textContent = `❌ ${error.message}`;
+                errorMessage.classList.add('show');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '生成文案';
+            }
+        });
+
+        // 複製到剪貼簿
+        function copyToClipboard() {
+            if (window.currentOutput) {
+                navigator.clipboard.writeText(window.currentOutput).then(() => {
+                    alert('✅ 已複製到剪貼簿');
+                });
+            }
+        }
+
+        // 防止 XSS
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+    </script>
+</body>
+</html>
