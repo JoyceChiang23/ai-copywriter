@@ -3,6 +3,7 @@
 
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const { Configuration, OpenAIApi } = require('openai');
 require('dotenv').config();
 
@@ -12,6 +13,14 @@ const PORT = process.env.PORT || 3000;
 // 中間件設定
 app.use(cors());
 app.use(express.json());
+
+// 提供靜態文件
+app.use(express.static(path.join(__dirname, '.')));
+
+// 根路由 - 提供主頁
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index-online.html'));
+});
 
 // OpenAI 設定
 const configuration = new Configuration({
