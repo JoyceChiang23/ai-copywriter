@@ -443,25 +443,27 @@ ${ctx}${versionNote}
 
 // ---- 蝦皮 SEO API ----
 
-const SHOPEE_SYSTEM_PROMPT = `你是台灣電商 SEO 顧問，專精蝦皮購物、momo、PChome 的搜尋演算法與台灣買家購物行為。
+const SHOPEE_SYSTEM_PROMPT = `你是台灣蝦皮電商 SEO 顧問，專門協助賣家優化商品標題與上架資訊。
 
 規則：
-- 必須繁體中文，用台灣慣用詞彙（不要大陸用語）
-- 關鍵字要真實、買家實際會搜尋的詞
-- 標題要塞入多個搜尋關鍵字但讀起來要通順
-- 禁用誇大詞：「絕對」「完美」「最高品質」「超值」「划算」（要說清楚為什麼值）
-- 輸出完成品，不加任何說明或評語，結尾不要說「希望對你有幫助」`;
+1. 必須使用繁體中文，用台灣電商語感，不用大陸用語
+2. 目標是協助賣家整理商品上架內容，不保證排名或銷量
+3. 標題要兼顧搜尋關鍵字與買家理解，不要只堆疊關鍵字
+4. 若有競品標題，只可參考關鍵字結構，不得逐字抄襲
+5. 嚴格禁用以下字眼：第一名、最便宜、保證有效、100%有效、神奇、必買、秒殺全網、官方唯一、絕對有效、限時搶購（除非用戶商品本身有活動）
+6. 商品描述要清楚實用，可直接貼到蝦皮商品頁
+7. 輸出完成品，不加助理式客套話，不自我評價，不說「希望符合您的需求」`;
 
 app.post('/api/shopee-seo', async (req, res) => {
   try {
-    const { productName, productFeatures, platform, category } = req.body;
+    const { productName, category, productFeatures, specs, targetAudience, useCase, competitorTitles, avoidWords } = req.body;
 
-    if (!productName || !productFeatures) {
-      return res.status(400).json({ error: '❌ 請填寫商品名稱和商品特色' });
+    if (!productName || !productFeatures || !category) {
+      return res.status(400).json({ error: '❌ 請填寫商品名稱、商品類別和商品特色' });
     }
 
-    const prompt = buildShopeePrompt(productName, productFeatures, platform, category);
-    console.log(`🛒 蝦皮 SEO 請求：${productName} | 平台：${platform || 'shopee'}`);
+    const prompt = buildShopeePrompt(productName, category, productFeatures, specs, targetAudience, useCase, competitorTitles, avoidWords);
+    console.log(`🛒 蝦皮 SEO 請求：${productName} | 類別：${category}`);
 
     const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
@@ -470,7 +472,7 @@ app.post('/api/shopee-seo', async (req, res) => {
         { role: 'user',   content: prompt }
       ],
       temperature: 0.72,
-      max_tokens: 2200
+      max_tokens: 3500
     });
 
     const result = completion.data.choices[0].message.content;
@@ -488,55 +490,100 @@ app.post('/api/shopee-seo', async (req, res) => {
   }
 });
 
-function buildShopeePrompt(productName, productFeatures, platform, category) {
-  const platformMap = {
-    shopee:          '蝦皮購物台灣（標題要塞關鍵字、可用表情符號輔助、CTA 用「加購」「限時」「現貨」）',
-    momo:            'momo 購物網（強調品牌信賴感與優惠，標題偏正式，CTA 用「立即訂購」）',
-    pchome:          'PChome（偏理性比較，著重規格與配件，CTA 用「立即購買」）',
-    'shopee-global': 'Shopee 國際版（避免台灣俗語，語氣親切通用）',
-    'custom-site':   '自建官網（品牌感優先，標題可有個性，CTA 可客製化）'
-  };
+function buildShopeePrompt(productName, category, productFeatures, specs, targetAudience, useCase, competitorTitles, avoidWords) {
+  const ctx = [
+    `商品名稱：${productName}`,
+    `商品類別：${category}`,
+    `商品特色/賣點：${productFeatures}`,
+    specs           ? `商品規格：${specs}` : '',
+    targetAudience  ? `適用對象：${targetAudience}` : '',
+    useCase         ? `使用情境：${useCase}` : '',
+    competitorTitles ? `競品標題參考（僅分析關鍵字結構，不得逐字抄襲）：\n${competitorTitles}` : '',
+    avoidWords      ? `⚠️ 以下詞絕對禁止出現在任何輸出中：${avoidWords}` : ''
+  ].filter(Boolean).join('\n');
 
-  const categoryMap = {
-    fashion:     '服飾配件', beauty: '美妝保養', electronics: '3C 電子',
-    home:        '家居生活', food:   '食品飲料', sports:      '運動戶外',
-    baby:        '媽媽育兒', pets:   '寵物用品', stationery:  '文具書籍',
-    auto:        '汽車機車', health: '健康保健'
-  };
+  return `${ctx}
 
-  return `商品名稱：${productName}
-商品特色：${productFeatures}
-目標平台：${platformMap[platform] || platformMap.shopee}
-${category ? `商品類別：${categoryMap[category] || category}` : ''}
+請依照以下格式輸出全部 6 個模組，不得省略任何區塊，不加說明或評語：
 
-請依照以下格式輸出，不要省略任何區塊，不要加說明：
+【模組一：5 組蝦皮 SEO 標題】
 
-【5 個優化標題】
-（每個標題包含多個買家搜尋關鍵字，蝦皮建議 100 字以內，每個標題切角和關鍵字組合要有差異）
-1.
-2.
-3.
-4.
-5.
+--- 標題 1 · 高搜尋曝光版 ---
+標題：（品類詞＋規格詞＋常見搜尋詞，關鍵字完整覆蓋，100 字以內）
+適合用途：新品上架初期，追求搜尋曝光量
+關鍵字類型：（說明用了哪些類型的詞）
+優點說明：（一句話說明這組標題的優勢）
 
-【核心搜尋關鍵字】
-（台灣買家搜尋這類商品最常用的 10 個詞，按重要度由高到低排列）
-1.
-2.
-3.
-4.
-5.
-6.
-7.
-8.
-9.
-10.
+--- 標題 2 · 高點擊吸引版 ---
+標題：（讓買家一眼看懂用途與好處）
+適合用途：有一定曝光後，追求提升點擊率
+關鍵字類型：
+優點說明：
 
-【商品描述】
-（150-250 字，有具體賣點，情境有畫面，語氣符合平台風格，不用空泛形容詞）
+--- 標題 3 · 高轉換銷售版 ---
+標題：（強調痛點解決、購買理由、實用性）
+適合用途：已有流量時，提升轉換率
+關鍵字類型：
+優點說明：
 
-【建議標籤】
-（適合設定的商品標籤，8-10 個，用逗號分隔）`;
+--- 標題 4 · 簡潔質感版 ---
+標題：（不過度堆疊，讓標題有品牌感）
+適合用途：走質感路線的賣家
+關鍵字類型：
+優點說明：
+
+--- 標題 5 · 長尾關鍵字版 ---
+標題：（含情境詞、族群詞、細分需求詞）
+適合用途：鎖定細分族群，提升精準轉換
+關鍵字類型：
+優點說明：
+
+【模組二：關鍵字分類】
+
+核心關鍵字：（逗號分隔，6-8 個）
+長尾關鍵字：（逗號分隔，6-8 個）
+使用情境關鍵字：（逗號分隔，4-6 個）
+目標族群關鍵字：（逗號分隔，4-6 個）
+規格/材質關鍵字：（逗號分隔，4-6 個）
+
+【模組三：商品描述】
+
+開場三行賣點：
+• （第一行，最核心賣點）
+• （第二行）
+• （第三行）
+
+商品特色：
+• （條列，每項一行）
+
+使用情境：（2-3 句具體場景）
+
+適合對象：（具體描述）
+
+商品規格：（條列整理）
+
+下單 CTA：（1-2 句，蝦皮電商語氣，不誇大）
+
+【模組四：建議標籤】
+
+（10-20 個，逗號分隔，只放與商品真正相關的詞，不塞無關熱門詞）
+
+【模組五：A/B 測試建議】
+
+建議測試 A：（引用上方其中一組標題文字）
+建議測試 B：（引用上方其中一組標題文字）
+測試原因：（為什麼選這兩組）
+觀察指標：曝光數、點擊率（CTR）、收藏數、轉換率
+
+【模組六：SEO 檢查清單】
+
+✅ 或 ❌ 包含商品品類詞：（說明）
+✅ 或 ❌ 包含主要規格詞：（說明）
+✅ 或 ❌ 包含使用情境詞：（說明）
+✅ 或 ❌ 包含目標族群詞：（說明）
+✅ 或 ❌ 避免過度堆疊關鍵字：（說明）
+✅ 或 ❌ 避免誇大或違規詞：（說明）
+✅ 或 ❌ 3 秒內讓買家看懂商品用途：（說明）`;
 }
 
 // ---- 啟動 ----
