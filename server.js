@@ -17,6 +17,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index-online.html'));
 });
 
+app.get('/shopee', (req, res) => {
+  res.sendFile(path.join(__dirname, 'shopee-seo.html'));
+});
+
 const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
 const openai = new OpenAIApi(configuration);
 
@@ -436,6 +440,106 @@ ${ctx}${versionNote}
 
   return templates[copyType] || `根據以下資訊，生成一份文案成品：\n\n${ctx}${versionNote}\n\n用繁體中文，語氣要像真人寫的，輸出可直接使用的成品。`;
 }
+
+// ---- 蝦皮 SEO API ----
+
+const SHOPEE_SYSTEM_PROMPT = `你是台灣電商 SEO 顧問，專精蝦皮購物、momo、PChome 的搜尋演算法與台灣買家購物行為。
+
+規則：
+- 必須繁體中文，用台灣慣用詞彙（不要大陸用語）
+- 關鍵字要真實、買家實際會搜尋的詞
+- 標題要塞入多個搜尋關鍵字但讀起來要通順
+- 禁用誇大詞：「絕對」「完美」「最高品質」「超值」「划算」（要說清楚為什麼值）
+- 輸出完成品，不加任何說明或評語，結尾不要說「希望對你有幫助」`;
+
+app.post('/api/shopee-seo', async (req, res) => {
+  try {
+    const { productName, productFeatures, platform, category } = req.body;
+
+    if (!productName || !productFeatures) {
+      return res.status(400).json({ error: '❌ 請填寫商品名稱和商品特色' });
+    }
+
+    const prompt = buildShopeePrompt(productName, productFeatures, platform, category);
+    console.log(`🛒 蝦皮 SEO 請求：${productName} | 平台：${platform || 'shopee'}`);
+
+    const completion = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: SHOPEE_SYSTEM_PROMPT },
+        { role: 'user',   content: prompt }
+      ],
+      temperature: 0.72,
+      max_tokens: 2200
+    });
+
+    const result = completion.data.choices[0].message.content;
+    console.log('✅ 蝦皮 SEO 生成成功');
+
+    res.json({ success: true, result, timestamp: new Date().toISOString() });
+
+  } catch (error) {
+    console.error('❌ 蝦皮 SEO 錯誤：', error.message);
+    if (error.message.includes('API key')) return res.status(401).json({ error: '❌ API Key 錯誤' });
+    if (error.message.includes('quota') || (error.response && error.response.status === 429)) {
+      return res.status(429).json({ error: '❌ API 額度不足，請儲值' });
+    }
+    res.status(500).json({ error: `❌ 發生錯誤：${error.message}` });
+  }
+});
+
+function buildShopeePrompt(productName, productFeatures, platform, category) {
+  const platformMap = {
+    shopee:          '蝦皮購物台灣（標題要塞關鍵字、可用表情符號輔助、CTA 用「加購」「限時」「現貨」）',
+    momo:            'momo 購物網（強調品牌信賴感與優惠，標題偏正式，CTA 用「立即訂購」）',
+    pchome:          'PChome（偏理性比較，著重規格與配件，CTA 用「立即購買」）',
+    'shopee-global': 'Shopee 國際版（避免台灣俗語，語氣親切通用）',
+    'custom-site':   '自建官網（品牌感優先，標題可有個性，CTA 可客製化）'
+  };
+
+  const categoryMap = {
+    fashion:     '服飾配件', beauty: '美妝保養', electronics: '3C 電子',
+    home:        '家居生活', food:   '食品飲料', sports:      '運動戶外',
+    baby:        '媽媽育兒', pets:   '寵物用品', stationery:  '文具書籍',
+    auto:        '汽車機車', health: '健康保健'
+  };
+
+  return `商品名稱：${productName}
+商品特色：${productFeatures}
+目標平台：${platformMap[platform] || platformMap.shopee}
+${category ? `商品類別：${categoryMap[category] || category}` : ''}
+
+請依照以下格式輸出，不要省略任何區塊，不要加說明：
+
+【5 個優化標題】
+（每個標題包含多個買家搜尋關鍵字，蝦皮建議 100 字以內，每個標題切角和關鍵字組合要有差異）
+1.
+2.
+3.
+4.
+5.
+
+【核心搜尋關鍵字】
+（台灣買家搜尋這類商品最常用的 10 個詞，按重要度由高到低排列）
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+8.
+9.
+10.
+
+【商品描述】
+（150-250 字，有具體賣點，情境有畫面，語氣符合平台風格，不用空泛形容詞）
+
+【建議標籤】
+（適合設定的商品標籤，8-10 個，用逗號分隔）`;
+}
+
+// ---- 啟動 ----
 
 app.listen(PORT, () => {
   console.log(`✅ AI 文案生成器啟動 → http://localhost:${PORT}`);

@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蝦皮 SEO 標題優化器 | 一鍵生成高點擊商品標題</title>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #f97316;
+            --primary-dark: #ea580c;
+            --secondary: #fb923c;
+            --indigo: #6366f1;
+            --bg: #fff8f5;
+            --card-bg: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --shadow-md: 0 4px 20px rgba(249,115,22,0.08), 0 2px 6px rgba(0,0,0,0.05);
+            --radius: 18px;
+            --radius-sm: 10px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* ---- Header ---- */
+        .site-header {
+            background: linear-gradient(135deg, #431407 0%, #7c2d12 45%, #9a3412 100%);
+            padding: 44px 24px 70px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .site-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .site-header::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0; right: 0;
+            height: 50px;
+            background: var(--bg);
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+        }
+
+        .header-inner { position: relative; z-index: 1; }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.9);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.6px;
+            margin-bottom: 18px;
+        }
+
+        .header-title {
+            font-size: clamp(28px, 5vw, 50px);
+            font-weight: 800;
+            color: white;
+            letter-spacing: -1px;
+            line-height: 1.15;
+            margin-bottom: 12px;
+        }
+
+        .header-title .accent {
+            background: linear-gradient(90deg, #fdba74, #fcd34d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-subtitle {
+            color: rgba(255,255,255,0.62);
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 500;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.7);
+            transition: all 0.4s ease;
+        }
+
+        .status-pill .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+            flex-shrink: 0;
+        }
+
+        .status-pill.connected { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.25); color: #6ee7b7; }
+        .status-pill.connected .dot { background: #10b981; box-shadow: 0 0 6px #10b981; animation: blink 2s ease-in-out infinite; }
+        .status-pill.disconnected { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.25); color: #fca5a5; }
+        .status-pill.disconnected .dot { background: #ef4444; }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+        /* ---- Nav link back ---- */
+        .nav-back {
+            position: absolute;
+            top: 18px;
+            left: 20px;
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255,255,255,0.6);
+            font-size: 13px;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-back:hover { color: white; }
+
+        /* ---- Main ---- */
+        .main-container {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 52px 24px 72px;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* ---- Card ---- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(249,115,22,0.07);
+            overflow: hidden;
+        }
+
+        .card-header { padding: 22px 26px 0; }
+        .card-body { padding: 18px 26px 26px; }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .title-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        /* ---- Form ---- */
+        .form-group { margin-top: 16px; }
+
+        .form-label {
+            display: block;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            margin-bottom: 7px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--text-primary);
+            background: #fafafa;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+        }
+
+        select.form-control {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 38px;
+            cursor: pointer;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+        }
+
+        textarea.form-control { min-height: 110px; resize: vertical; line-height: 1.65; }
+
+        .tip-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            background: #fff7ed;
+            border: 1px solid rgba(249,115,22,0.18);
+            border-radius: var(--radius-sm);
+            padding: 11px 13px;
+            font-size: 13px;
+            color: #9a3412;
+            margin-top: 16px;
+            line-height: 1.5;
+        }
+
+        /* ---- Button ---- */
+        .btn-generate {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-generate:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(249,115,22,0.38);
+        }
+
+        .btn-generate:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
+        .btn-generate:disabled { opacity: 0.65; cursor: not-allowed; }
+
+        .spinner {
+            display: inline-block;
+            width: 13px; height: 13px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.65s linear infinite;
+            margin-right: 8px;
+            vertical-align: -2px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .msg { margin-top: 12px; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; display: none; }
+        .msg.show { display: block; }
+        .msg-error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
+        .msg-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+
+        /* ---- Output ---- */
+        .output-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            text-align: center;
+            padding: 40px 32px;
+            gap: 14px;
+        }
+
+        .placeholder-icon {
+            width: 64px; height: 64px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #fff7ed, #ffedd5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 4px;
+        }
+
+        .placeholder-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+        .placeholder-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+
+        /* Skeleton */
+        .output-skeleton { display: none; padding: 26px; }
+        .output-skeleton.show { display: block; }
+
+        .sk-line {
+            height: 13px;
+            background: linear-gradient(90deg, #f5f5f5 25%, #ebebeb 50%, #f5f5f5 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 100px;
+            margin-bottom: 11px;
+        }
+
+        .sk-line:last-child { margin-bottom: 0; }
+        .w-full { width: 100%; } .w-90 { width: 90%; } .w-80 { width: 80%; } .w-60 { width: 60%; }
+
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* Result */
+        .output-result { display: none; }
+        .output-result.show { display: block; }
+
+        /* Section blocks */
+        .result-section {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .result-section:last-child { border-bottom: none; }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Titles */
+        .title-item {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            background: #fafafa;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .title-item:last-child { margin-bottom: 0; }
+
+        .title-item:hover { border-color: var(--primary); }
+
+        .title-num {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .title-text {
+            flex: 1;
+            font-size: 13.5px;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .btn-copy-sm {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1.5px solid var(--border);
+            background: white;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-copy-sm:hover { border-color: var(--primary); color: var(--primary); background: #fff7ed; }
+        .btn-copy-sm.copied { border-color: #10b981; color: #10b981; background: #f0fdf4; }
+
+        /* Keyword chips */
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            background: #fff7ed;
+            border: 1px solid rgba(249,115,22,0.2);
+            color: #9a3412;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chip:hover { background: #f97316; color: white; border-color: #f97316; }
+
+        /* Description */
+        .result-desc {
+            font-size: 13.5px;
+            line-height: 1.85;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: #fafafa;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+
+        /* Copy all button */
+        .result-actions {
+            padding: 14px 22px;
+            background: #fafafa;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1.5px solid var(--border);
+            background: white;
+            color: var(--text-secondary);
+        }
+
+        .btn-action:hover { border-color: var(--primary); color: var(--primary); background: #fff7ed; }
+
+        .btn-action.primary {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            border: none;
+        }
+
+        .btn-action.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(249,115,22,0.3);
+            color: white;
+        }
+
+        /* Footer */
+        .site-footer {
+            text-align: center;
+            padding: 20px 24px;
+            color: #9ca3af;
+            font-size: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .site-footer a { color: var(--primary); text-decoration: none; }
+
+        @media (max-width: 768px) {
+            .site-header { padding: 36px 20px 58px; }
+            .two-col { grid-template-columns: 1fr; }
+            .main-container { padding: 40px 16px 52px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="site-header">
+    <a href="/" class="nav-back">← 回文案生成器</a>
+    <div class="header-inner">
+        <div class="header-badge">🛒 電商賣家專用工具</div>
+        <h1 class="header-title">蝦皮 <span class="accent">SEO 優化器</span></h1>
+        <p class="header-subtitle">
+            輸入商品資訊，一鍵生成高點擊標題 + 關鍵字清單<br>
+            讓你的商品出現在更多買家的搜尋結果
+        </p>
+        <div id="statusPill" class="status-pill">
+            <span class="dot"></span>
+            <span id="statusText">檢查伺服器連線中...</span>
+        </div>
+    </div>
+</header>
+
+<main class="main-container">
+    <div class="two-col">
+
+        <!-- 輸入 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <div class="title-icon">📦</div>
+                    輸入商品資訊
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="shopeeForm">
+
+                    <div class="form-group">
+                        <label class="form-label">商品名稱 <span style="color:#ef4444">*</span></label>
+                        <input
+                            type="text"
+                            id="productName"
+                            class="form-control"
+                            placeholder="例如：韓版寬鬆T恤、防水登山背包、陶瓷馬克杯"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">商品特色 / 賣點 <span style="color:#ef4444">*</span></label>
+                        <textarea
+                            id="productFeatures"
+                            class="form-control"
+                            placeholder="例如：MIT 台灣製造、S-XL 四個尺寸、棉質透氣、男女皆可穿、夏天涼感材質、顯瘦剪裁…"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">目標平台</label>
+                        <select id="platform" class="form-control">
+                            <option value="shopee">🛒 蝦皮購物（台灣）</option>
+                            <option value="momo">📦 momo 購物網</option>
+                            <option value="pchome">💻 PChome</option>
+                            <option value="shopee-global">🌏 Shopee 國際版</option>
+                            <option value="custom-site">🏠 自建官網</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">商品類別（選填）</label>
+                        <select id="category" class="form-control">
+                            <option value="">— 不指定 —</option>
+                            <option value="fashion">服飾配件</option>
+                            <option value="beauty">美妝保養</option>
+                            <option value="electronics">3C 電子</option>
+                            <option value="home">家居生活</option>
+                            <option value="food">食品飲料</option>
+                            <option value="sports">運動戶外</option>
+                            <option value="baby">媽媽育兒</option>
+                            <option value="pets">寵物用品</option>
+                            <option value="stationery">文具書籍</option>
+                            <option value="auto">汽車機車</option>
+                            <option value="health">健康保健</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="generateBtn" class="btn-generate">
+                        🔍 一鍵優化標題
+                    </button>
+
+                    <div id="errorMsg" class="msg msg-error"></div>
+                    <div id="successMsg" class="msg msg-success"></div>
+
+                    <div class="tip-box">
+                        💡 特色描述越詳細（材質、尺寸、特色、適用族群），關鍵字越精準
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- 輸出 -->
+        <div class="card">
+
+            <!-- Placeholder -->
+            <div class="output-placeholder" id="outputPlaceholder">
+                <div class="placeholder-icon">🔍</div>
+                <div class="placeholder-title">優化結果將顯示在這裡</div>
+                <p class="placeholder-desc">
+                    填入商品資訊後<br>
+                    AI 將生成 5 個高點擊標題 + 關鍵字清單
+                </p>
+            </div>
+
+            <!-- Skeleton -->
+            <div class="output-skeleton" id="outputSkeleton">
+                <div style="height:14px;background:#fff1e6;border-radius:4px;margin-bottom:16px;width:40%"></div>
+                <div class="sk-line w-full"></div>
+                <div class="sk-line w-90"></div>
+                <div class="sk-line w-full"></div>
+                <div class="sk-line w-80"></div>
+                <div class="sk-line w-90"></div>
+                <div style="height:14px;background:#fff1e6;border-radius:4px;margin:20px 0 12px;width:35%"></div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <div style="width:60px;height:26px;background:#f5f5f5;border-radius:100px;animation:shimmer 1.4s infinite;background-size:200% 100%;background-image:linear-gradient(90deg,#f5f5f5 25%,#ebebeb 50%,#f5f5f5 75%)"></div>
+                    <div style="width:80px;height:26px;background:#f5f5f5;border-radius:100px;animation:shimmer 1.4s infinite;background-size:200% 100%;background-image:linear-gradient(90deg,#f5f5f5 25%,#ebebeb 50%,#f5f5f5 75%)"></div>
+                    <div style="width:50px;height:26px;background:#f5f5f5;border-radius:100px;animation:shimmer 1.4s infinite;background-size:200% 100%;background-image:linear-gradient(90deg,#f5f5f5 25%,#ebebeb 50%,#f5f5f5 75%)"></div>
+                </div>
+            </div>
+
+            <!-- Result -->
+            <div class="output-result" id="outputResult">
+
+                <!-- Titles -->
+                <div class="result-section">
+                    <div class="section-label">🏆 5 個優化標題（點擊複製）</div>
+                    <div id="titlesContainer"></div>
+                </div>
+
+                <!-- Keywords -->
+                <div class="result-section">
+                    <div class="section-label">🔑 核心搜尋關鍵字（點擊複製）</div>
+                    <div class="chips" id="keywordsContainer"></div>
+                </div>
+
+                <!-- Description -->
+                <div class="result-section">
+                    <div class="section-label" style="justify-content:space-between">
+                        <span>📝 商品描述</span>
+                        <button class="btn-copy-sm" id="copyDescBtn" onclick="copyDesc()">複製</button>
+                    </div>
+                    <div class="result-desc" id="descContainer"></div>
+                </div>
+
+                <!-- Tags -->
+                <div class="result-section">
+                    <div class="section-label">🏷️ 建議標籤</div>
+                    <div class="chips" id="tagsContainer"></div>
+                </div>
+
+                <div class="result-actions">
+                    <button class="btn-action primary" onclick="copyAll()">📋 複製全部內容</button>
+                    <button class="btn-action" onclick="document.getElementById('shopeeForm').dispatchEvent(new Event('submit'))">🔄 重新生成</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    蝦皮 SEO 優化器 · <a href="/">也試試 AI 文案生成器</a> · 由 AI 生成，請自行確認關鍵字適用性
+</footer>
+
+<script>
+    const API_BASE = `${window.location.protocol}//${window.location.host}`;
+    let rawOutput = '';
+
+    // 連線檢查
+    window.addEventListener('load', async () => {
+        const pill = document.getElementById('statusPill');
+        const txt  = document.getElementById('statusText');
+        try {
+            const r = await fetch(`${API_BASE}/health`);
+            if (r.ok) { pill.className = 'status-pill connected'; txt.textContent = '伺服器已連線'; }
+            else { setDisconnected(pill, txt); }
+        } catch { setDisconnected(pill, txt); }
+    });
+
+    function setDisconnected(pill, txt) {
+        pill.className = 'status-pill disconnected';
+        txt.textContent = '無法連接伺服器';
+    }
+
+    // 表單送出
+    document.getElementById('shopeeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const productName     = document.getElementById('productName').value.trim();
+        const productFeatures = document.getElementById('productFeatures').value.trim();
+        const platform        = document.getElementById('platform').value;
+        const category        = document.getElementById('category').value;
+        const btn             = document.getElementById('generateBtn');
+        const errorMsg        = document.getElementById('errorMsg');
+        const successMsg      = document.getElementById('successMsg');
+
+        errorMsg.classList.remove('show');
+        successMsg.classList.remove('show');
+
+        // Skeleton
+        document.getElementById('outputPlaceholder').style.display = 'none';
+        document.getElementById('outputSkeleton').className = 'output-skeleton show';
+        document.getElementById('outputResult').className = 'output-result';
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>優化中...';
+
+        try {
+            const res  = await fetch(`${API_BASE}/api/shopee-seo`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productName, productFeatures, platform, category })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || '生成失敗');
+
+            rawOutput = data.result;
+            renderResult(data.result);
+
+            successMsg.textContent = '✅ 優化完成！點擊標題可直接複製';
+            successMsg.classList.add('show');
+
+        } catch (err) {
+            document.getElementById('outputSkeleton').className = 'output-skeleton';
+            document.getElementById('outputPlaceholder').style.display = 'flex';
+            errorMsg.textContent = `❌ ${err.message}`;
+            errorMsg.classList.add('show');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '🔍 一鍵優化標題';
+        }
+    });
+
+    // 解析並渲染結果
+    function renderResult(text) {
+        document.getElementById('outputSkeleton').className = 'output-skeleton';
+        document.getElementById('outputResult').className = 'output-result show';
+
+        // 解析各區塊
+        const sections = parseSection(text);
+
+        // 標題
+        const titlesEl = document.getElementById('titlesContainer');
+        titlesEl.innerHTML = '';
+        const titles = parseTitles(sections['5 個優化標題'] || sections['優化標題'] || '');
+        if (titles.length > 0) {
+            titles.forEach((t, i) => {
+                titlesEl.innerHTML += `
+                    <div class="title-item">
+                        <div class="title-num">${i + 1}</div>
+                        <div class="title-text">${escHtml(t)}</div>
+                        <button class="btn-copy-sm" onclick="copyTitle(this, '${escAttr(t)}')">複製</button>
+                    </div>`;
+            });
+        } else {
+            titlesEl.innerHTML = `<div class="result-desc">${escHtml(sections['5 個優化標題'] || sections['優化標題'] || '（無法解析標題，請查看全部內容）')}</div>`;
+        }
+
+        // 關鍵字
+        const kwEl = document.getElementById('keywordsContainer');
+        kwEl.innerHTML = '';
+        const keywords = parseList(sections['核心搜尋關鍵字'] || sections['10 個核心搜尋關鍵字'] || '');
+        keywords.forEach(kw => {
+            kwEl.innerHTML += `<span class="chip" onclick="copyChip(this,'${escAttr(kw)}')">${escHtml(kw)}</span>`;
+        });
+        if (keywords.length === 0) kwEl.innerHTML = '<span style="color:#9ca3af;font-size:13px">—</span>';
+
+        // 描述
+        document.getElementById('descContainer').textContent =
+            sections['商品描述'] || '（未找到商品描述區塊）';
+
+        // 標籤
+        const tagsEl = document.getElementById('tagsContainer');
+        tagsEl.innerHTML = '';
+        const tagText = sections['建議標籤'] || '';
+        const tags = tagText.split(/[,、，\n]/).map(t => t.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
+        tags.forEach(tag => {
+            tagsEl.innerHTML += `<span class="chip" onclick="copyChip(this,'${escAttr(tag)}')">${escHtml(tag)}</span>`;
+        });
+        if (tags.length === 0) tagsEl.innerHTML = '<span style="color:#9ca3af;font-size:13px">—</span>';
+    }
+
+    // 解析【區塊名稱】
+    function parseSection(text) {
+        const result = {};
+        const regex = /【([^】]+)】\s*([\s\S]*?)(?=【[^】]+】|$)/g;
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+            result[match[1].trim()] = match[2].trim();
+        }
+        return result;
+    }
+
+    // 解析標題（支援「1. 」「標題 1：」格式）
+    function parseTitles(text) {
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+        const titles = [];
+        for (const line of lines) {
+            const m = line.match(/^(?:\d+\.|標題\s*\d+[：:])?\s*(.+)$/);
+            if (m && m[1].length > 5) titles.push(m[1].trim());
+        }
+        return titles.slice(0, 5);
+    }
+
+    // 解析清單（數字或點列）
+    function parseList(text) {
+        return text.split('\n')
+            .map(l => l.replace(/^\d+\.\s*/, '').replace(/^[-•]\s*/, '').trim())
+            .filter(l => l.length > 0);
+    }
+
+    // 複製標題
+    function copyTitle(btn, text) {
+        navigator.clipboard.writeText(text).then(() => {
+            btn.textContent = '✅';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = '複製'; btn.classList.remove('copied'); }, 2000);
+        });
+    }
+
+    // 複製 chip
+    function copyChip(el, text) {
+        navigator.clipboard.writeText(text).then(() => {
+            const orig = el.textContent;
+            el.textContent = '✅ 已複製';
+            setTimeout(() => el.textContent = orig, 1500);
+        });
+    }
+
+    // 複製商品描述
+    function copyDesc() {
+        const text = document.getElementById('descContainer').textContent;
+        const btn = document.getElementById('copyDescBtn');
+        navigator.clipboard.writeText(text).then(() => {
+            btn.textContent = '✅ 已複製';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = '複製'; btn.classList.remove('copied'); }, 2000);
+        });
+    }
+
+    // 複製全部
+    function copyAll() {
+        navigator.clipboard.writeText(rawOutput).then(() => alert('✅ 全部內容已複製'));
+    }
+
+    function escHtml(s) {
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function escAttr(s) {
+        return s.replace(/'/g, "\\'").replace(/"/g, '\\"');
+    }
+</script>
+</body>
+</html>
