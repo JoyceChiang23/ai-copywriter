@@ -993,16 +993,23 @@
 
         let titles = null;
 
-        // 嘗試從文字中提取 JSON 陣列（處理有/無 code block 的情況）
+        // 括號計數法找最外層 JSON 陣列，避免 regex 非貪婪誤截子陣列
         try {
             const stripped = text.trim()
                 .replace(/^```(?:json)?\s*/i, '')
                 .replace(/\s*```$/, '');
-            const jsonMatch = stripped.match(/(\[[\s\S]*?\])/);
-            if (jsonMatch) {
-                const parsed = JSON.parse(jsonMatch[1]);
-                if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].title) {
-                    titles = parsed;
+            const startIdx = stripped.indexOf('[');
+            if (startIdx !== -1) {
+                let depth = 0, endIdx = -1;
+                for (let i = startIdx; i < stripped.length; i++) {
+                    if (stripped[i] === '[') depth++;
+                    else if (stripped[i] === ']' && --depth === 0) { endIdx = i; break; }
+                }
+                if (endIdx !== -1) {
+                    const parsed = JSON.parse(stripped.substring(startIdx, endIdx + 1));
+                    if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].title) {
+                        titles = parsed;
+                    }
                 }
             }
         } catch (e) {
