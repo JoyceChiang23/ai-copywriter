@@ -108,7 +108,7 @@
         .main-container { max-width: 1160px; margin: 0 auto; padding: 48px 20px 72px; }
 
         .two-col {
-            display: grid; grid-template-columns: 420px 1fr;
+            display: grid; grid-template-columns: 460px 1fr;
             gap: 24px; align-items: start;
         }
 
@@ -535,7 +535,7 @@
                     <div class="form-group">
                         <label class="form-label">目前商品標題 / 原始標題 <span class="optional-tag">選填</span></label>
                         <input type="text" id="originalTitle" class="form-control"
-                            placeholder="如果你已經有蝦皮商品標題，可以貼在這裡，AI 會分析原標題問題並提出優化方向" />
+                            placeholder="貼上現有蝦皮標題（選填），AI 會分析問題並提出優化方向" />
                     </div>
 
                     <div class="form-group">
@@ -575,13 +575,13 @@
                     <div class="form-group">
                         <label class="form-label">適用對象 <span class="optional-tag">選填</span></label>
                         <input type="text" id="targetAudience" class="form-control"
-                            placeholder="例如：租屋族、小套房、學生、上班族、寵物飼主、新手媽媽" />
+                            placeholder="例如：租屋族、學生、上班族、小套房住戶" />
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">使用情境 <span class="optional-tag">選填</span></label>
                         <input type="text" id="useCase" class="form-control"
-                            placeholder="例如：床邊、沙發邊、露營、通勤、辦公桌、送禮、居家收納" />
+                            placeholder="例如：床邊桌、沙發旁、筆電桌、咖啡桌" />
                     </div>
 
                     <!-- 進階選填 -->
@@ -601,7 +601,7 @@
                             <div class="form-group">
                                 <label class="form-label">想避開的詞 <span class="optional-tag">選填</span></label>
                                 <input type="text" id="avoidWords" class="form-control"
-                                    placeholder="例如：北歐風、懶人桌、最便宜、必買（這些詞將完全不出現在結果中）" />
+                                    placeholder="例如：北歐風、懶人桌、最便宜（填入後不會出現在任何結果中）" />
                             </div>
 
                         </div>
@@ -986,60 +986,101 @@
         container.innerHTML = html || `<div class="desc-text">${esc(text)}</div>`;
     }
 
-    // Module 1: Titles
+    // Module 1: Titles — JSON-first parser
     function renderTitles(text) {
         const container = document.getElementById('titlesContainer');
         container.innerHTML = '';
 
-        const titleTypes = ['高搜尋曝光版','高點擊吸引版','高轉換銷售版','簡潔質感版','長尾關鍵字版'];
-        const headers    = [...text.matchAll(/---\s*標題\s*(\d+)\s*[··•]\s*([^-]+?)\s*---/g)];
-        const sections   = text.split(/---\s*標題\s*\d+\s*[··•]\s*/);
+        let titles = null;
+
+        // 嘗試從文字中提取 JSON 陣列（處理有/無 code block 的情況）
+        try {
+            const stripped = text.trim()
+                .replace(/^```(?:json)?\s*/i, '')
+                .replace(/\s*```$/, '');
+            const jsonMatch = stripped.match(/(\[[\s\S]*?\])/);
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[1]);
+                if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].title) {
+                    titles = parsed;
+                }
+            }
+        } catch (e) {
+            console.warn('Title JSON parse failed, fallback to text:', e.message);
+        }
 
         let titleTextsForCopy = [];
 
-        if (headers.length > 0) {
-            headers.forEach((hdr, i) => {
-                const typeLabel    = hdr[2].trim() || titleTypes[i] || `標題 ${hdr[1]}`;
-                const body         = sections[i + 1] ? sections[i + 1].split('---')[0].trim() : '';
-                const titleLine    = (body.match(/^標題[：:]\s*(.+)/m) || [])[1]?.trim() || '';
-                const usageLine    = (body.match(/適合用途[：:]\s*(.+)/m) || [])[1]?.trim() || '';
-                const kwLine       = (body.match(/關鍵字類型[：:]\s*(.+)/m) || [])[1]?.trim() || '';
-                const benefit      = (body.match(/優點說明[：:]\s*(.+)/m) || [])[1]?.trim() || '';
-                const displayTitle = titleLine || body.split('\n')[0]?.replace(/^標題[：:]?\s*/, '').trim();
+        if (titles) {
+            // ── JSON 路徑（新格式） ──
+            titles.forEach(t => {
+                const displayTitle = (t.title || '').trim();
+                if (!displayTitle) return;
                 titleTextsForCopy.push(displayTitle);
-
+                const kwChips = (t.keywordsUsed || [])
+                    .map(k => `<span class="title-meta-item">${esc(k)}</span>`).join('');
                 container.innerHTML += `
                 <div class="title-card">
                     <div class="title-card-top">
-                        <span class="title-type-tag">${esc(typeLabel)}</span>
+                        <span class="title-type-tag">${esc(t.type || '')}</span>
                         <button class="btn-copy-title" onclick="copyText(this,'${escAttr(displayTitle)}')">複製標題</button>
                     </div>
                     <div class="title-main-text">${esc(displayTitle)}</div>
-                    <div class="title-meta">
-                        ${usageLine ? `<span class="title-meta-item">用途：${esc(usageLine)}</span>` : ''}
-                        ${kwLine    ? `<span class="title-meta-item">關鍵字：${esc(kwLine)}</span>` : ''}
-                    </div>
-                    ${benefit ? `<div class="title-benefit">💡 ${esc(benefit)}</div>` : ''}
+                    ${kwChips ? `<div class="title-meta">${kwChips}</div>` : ''}
+                    ${t.purpose ? `<div class="title-meta" style="margin-top:5px"><span class="title-meta-item">用途：${esc(t.purpose)}</span></div>` : ''}
+                    ${t.reason  ? `<div class="title-benefit">💡 ${esc(t.reason)}</div>` : ''}
                 </div>`;
             });
         } else {
-            const lines = text.split('\n').filter(l => /^\d+[\.、]/.test(l.trim()));
-            if (lines.length > 0) {
-                lines.forEach((line, i) => {
-                    const t = line.replace(/^\d+[\.、]\s*/, '').trim();
-                    titleTextsForCopy.push(t);
+            // ── 文字備援路徑（舊格式 / 降級） ──
+            const titleTypes = ['高搜尋曝光版','高點擊吸引版','高轉換銷售版','簡潔質感版','長尾關鍵字版'];
+            const headers    = [...text.matchAll(/---\s*標題\s*(\d+)\s*[··•·]\s*([^-]+?)\s*---/g)];
+            const sections   = text.split(/---\s*標題\s*\d+\s*[··•·]\s*/);
+
+            if (headers.length > 0) {
+                headers.forEach((hdr, i) => {
+                    const typeLabel    = hdr[2].trim() || titleTypes[i] || `標題 ${hdr[1]}`;
+                    const body         = sections[i + 1] ? sections[i + 1].split('---')[0].trim() : '';
+                    const titleLine    = (body.match(/^標題[：:]\s*(.+)/m) || [])[1]?.trim() || '';
+                    const usageLine    = (body.match(/適合用途[：:]\s*(.+)/m) || [])[1]?.trim() || '';
+                    const kwLine       = (body.match(/關鍵字類型[：:]\s*(.+)/m) || [])[1]?.trim() || '';
+                    const benefit      = (body.match(/優點說明[：:]\s*(.+)/m) || [])[1]?.trim() || '';
+                    const displayTitle = titleLine || body.split('\n')[0]?.replace(/^標題[：:]?\s*/, '').trim() || '';
+                    if (!displayTitle) return;
+                    titleTextsForCopy.push(displayTitle);
                     container.innerHTML += `
                     <div class="title-card">
                         <div class="title-card-top">
-                            <span class="title-type-tag">${titleTypes[i] || `標題 ${i+1}`}</span>
-                            <button class="btn-copy-title" onclick="copyText(this,'${escAttr(t)}')">複製標題</button>
+                            <span class="title-type-tag">${esc(typeLabel)}</span>
+                            <button class="btn-copy-title" onclick="copyText(this,'${escAttr(displayTitle)}')">複製標題</button>
                         </div>
-                        <div class="title-main-text">${esc(t)}</div>
+                        <div class="title-main-text">${esc(displayTitle)}</div>
+                        <div class="title-meta">
+                            ${usageLine ? `<span class="title-meta-item">用途：${esc(usageLine)}</span>` : ''}
+                            ${kwLine    ? `<span class="title-meta-item">關鍵字：${esc(kwLine)}</span>` : ''}
+                        </div>
+                        ${benefit ? `<div class="title-benefit">💡 ${esc(benefit)}</div>` : ''}
                     </div>`;
                 });
             } else {
-                container.innerHTML = `<div class="desc-text">${esc(text)}</div>`;
-                titleTextsForCopy = [text];
+                const lines = text.split('\n').filter(l => /^\d+[\.、]/.test(l.trim()));
+                if (lines.length > 0) {
+                    lines.forEach((line, i) => {
+                        const t2 = line.replace(/^\d+[\.、]\s*/, '').trim();
+                        titleTextsForCopy.push(t2);
+                        container.innerHTML += `
+                        <div class="title-card">
+                            <div class="title-card-top">
+                                <span class="title-type-tag">${titleTypes[i] || `標題 ${i+1}`}</span>
+                                <button class="btn-copy-title" onclick="copyText(this,'${escAttr(t2)}')">複製標題</button>
+                            </div>
+                            <div class="title-main-text">${esc(t2)}</div>
+                        </div>`;
+                    });
+                } else {
+                    container.innerHTML = `<div class="desc-text">${esc(text)}</div>`;
+                    titleTextsForCopy = [text];
+                }
             }
         }
 
