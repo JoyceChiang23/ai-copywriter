@@ -769,6 +769,7 @@
 <script>
     const API_BASE = `${window.location.protocol}//${window.location.host}`;
     let rawOutput = '';
+    let formattedOutput = '';
 
     // 連線檢查
     window.addEventListener('load', async () => {
@@ -888,24 +889,46 @@
         document.getElementById('outputResult').className = 'output-result show';
 
         const mods = parseModules(text);
+        const fmtParts = [];
 
-        // M0: 原始標題問題分析（條件顯示）
+        // M0
         const analysisText = mods['零'] || mods['0'] || '';
         if (hasOriginalTitle && analysisText) {
             renderAnalysis(analysisText);
             document.getElementById('m0Module').style.display = 'block';
+            fmtParts.push('【原始標題問題分析】\n\n' + analysisText);
         } else {
             document.getElementById('m0Module').style.display = 'none';
         }
 
-        renderTitles(mods['一'] || mods['1'] || '');
-        renderKeywords(mods['二'] || mods['2'] || '');
-        renderDescription(mods['三'] || mods['3'] || '');
-        renderTags(mods['四'] || mods['4'] || '');
-        renderAB(mods['五'] || mods['5'] || '');
-        renderChecklist(mods['六'] || mods['6'] || '');
+        // M1
+        const m1 = mods['一'] || mods['1'] || '';
+        renderTitles(m1);
+        fmtParts.push(formatTitlesText(m1));
 
-        document.getElementById('allText').value = text;
+        // M2–M6
+        const m2 = mods['二'] || mods['2'] || '';
+        renderKeywords(m2);
+        if (m2) fmtParts.push('【模組二：關鍵字分類】\n\n' + m2);
+
+        const m3 = mods['三'] || mods['3'] || '';
+        renderDescription(m3);
+        if (m3) fmtParts.push('【模組三：商品描述】\n\n' + m3);
+
+        const m4 = mods['四'] || mods['4'] || '';
+        renderTags(m4);
+        if (m4) fmtParts.push('【模組四：建議標籤】\n\n' + m4);
+
+        const m5 = mods['五'] || mods['5'] || '';
+        renderAB(m5);
+        if (m5) fmtParts.push('【模組五：A/B 測試建議】\n\n' + m5);
+
+        const m6 = mods['六'] || mods['6'] || '';
+        renderChecklist(m6);
+        if (m6) fmtParts.push('【模組六：SEO 檢查清單】\n\n' + m6);
+
+        formattedOutput = fmtParts.filter(Boolean).join('\n\n---\n\n');
+        document.getElementById('allText').value = formattedOutput;
     }
 
     function parseModules(text) {
@@ -984,6 +1007,44 @@
         }
 
         container.innerHTML = html || `<div class="desc-text">${esc(text)}</div>`;
+    }
+
+    // 將 Module 1 JSON 標題陣列轉成純文字（供「複製全部結果」使用）
+    function formatTitlesText(text) {
+        let titles = null;
+        try {
+            const stripped = text.trim()
+                .replace(/^```(?:json)?\s*/i, '')
+                .replace(/\s*```$/, '');
+            const startIdx = stripped.indexOf('[');
+            if (startIdx !== -1) {
+                let depth = 0, endIdx = -1;
+                for (let i = startIdx; i < stripped.length; i++) {
+                    if (stripped[i] === '[') depth++;
+                    else if (stripped[i] === ']' && --depth === 0) { endIdx = i; break; }
+                }
+                if (endIdx !== -1) {
+                    const parsed = JSON.parse(stripped.substring(startIdx, endIdx + 1));
+                    if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].title) titles = parsed;
+                }
+            }
+        } catch(e) {}
+
+        let out = '【模組一：5 組蝦皮 SEO 標題】\n\n';
+        if (titles) {
+            titles.forEach((t, i) => {
+                out += `${i + 1}. ${t.type || ''}\n`;
+                out += `   標題：${t.title || ''}\n`;
+                if (t.purpose) out += `   適合用途：${t.purpose}\n`;
+                if (t.keywordsUsed && t.keywordsUsed.length)
+                    out += `   使用關鍵字：${t.keywordsUsed.join('、')}\n`;
+                if (t.reason) out += `   優點說明：${t.reason}\n`;
+                out += '\n';
+            });
+        } else {
+            out += text + '\n';
+        }
+        return out.trim();
     }
 
     // Module 1: Titles — JSON-first parser
@@ -1194,7 +1255,7 @@
     }
 
     function copyAll() {
-        navigator.clipboard.writeText(rawOutput).then(() => {
+        navigator.clipboard.writeText(formattedOutput || rawOutput).then(() => {
             alert('✅ 全部結果已複製到剪貼簿');
         });
     }
