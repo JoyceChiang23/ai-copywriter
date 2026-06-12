@@ -449,21 +449,26 @@ const SHOPEE_SYSTEM_PROMPT = `你是台灣蝦皮電商 SEO 顧問，專門協助
 1. 必須使用繁體中文，用台灣電商語感，不用大陸用語
 2. 目標是協助賣家整理商品上架內容，不保證排名或銷量
 3. 標題要兼顧搜尋關鍵字與買家理解，不要只堆疊關鍵字
-4. 若有競品標題，只可參考關鍵字結構，不得逐字抄襲
-5. 嚴格禁用以下字眼：第一名、最便宜、保證有效、100%有效、神奇、必買、秒殺全網、官方唯一、絕對有效、限時搶購（除非用戶商品本身有活動）
-6. 商品描述要清楚實用，可直接貼到蝦皮商品頁
-7. 輸出完成品，不加助理式客套話，不自我評價，不說「希望符合您的需求」`;
+4. 若有競品標題，只可參考關鍵字方向與結構，絕不逐字抄襲
+5. 嚴格禁用以下字眼：第一名、全台最便宜、保證有效、100%有效、神奇效果、必買、秒殺全網、官方唯一、絕對保證、限時搶購、銷量冠軍
+6. 如果使用者提供「想避開的詞」，這些詞必須完全不出現在任何輸出中，包含標題、關鍵字、描述、標籤
+7. 商品規格、適用對象、使用情境必須優先整合進標題與商品描述
+8. 5 組標題必須方向截然不同，不能只是換字或調換順序
+9. 商品描述開頭必須先講買家最在意的好處，不要先說商品名稱
+10. 如果有提供原始商品標題，必須先完整分析其問題，再產出優化版本
+11. 輸出完成品，不加助理式客套話，不自我評價，不說「希望符合您的需求」、「如需更多協助請告訴我」、「謝謝」`;
 
 app.post('/api/shopee-seo', async (req, res) => {
   try {
-    const { productName, category, productFeatures, specs, targetAudience, useCase, competitorTitles, avoidWords } = req.body;
+    const { productName, originalTitle, category, customCategory, productFeatures, specs, targetAudience, useCase, competitorTitles, avoidWords } = req.body;
+    const effectiveCategory = (customCategory && customCategory.trim()) ? customCategory.trim() : category;
 
-    if (!productName || !productFeatures || !category) {
+    if (!productName || !productFeatures || !effectiveCategory) {
       return res.status(400).json({ error: '❌ 請填寫商品名稱、商品類別和商品特色' });
     }
 
-    const prompt = buildShopeePrompt(productName, category, productFeatures, specs, targetAudience, useCase, competitorTitles, avoidWords);
-    console.log(`🛒 蝦皮 SEO 請求：${productName} | 類別：${category}`);
+    const prompt = buildShopeePrompt(productName, effectiveCategory, productFeatures, specs, targetAudience, useCase, competitorTitles, avoidWords, originalTitle);
+    console.log(`🛒 蝦皮 SEO 請求：${productName} | 類別：${effectiveCategory} | 原始標題：${originalTitle ? '有' : '無'}`);
 
     const completion = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
@@ -490,23 +495,49 @@ app.post('/api/shopee-seo', async (req, res) => {
   }
 });
 
-function buildShopeePrompt(productName, category, productFeatures, specs, targetAudience, useCase, competitorTitles, avoidWords) {
+function buildShopeePrompt(productName, category, productFeatures, specs, targetAudience, useCase, competitorTitles, avoidWords, originalTitle) {
   const ctx = [
     `商品名稱：${productName}`,
     `商品類別：${category}`,
     `商品特色/賣點：${productFeatures}`,
-    specs           ? `商品規格：${specs}` : '',
-    targetAudience  ? `適用對象：${targetAudience}` : '',
-    useCase         ? `使用情境：${useCase}` : '',
-    competitorTitles ? `競品標題參考（僅分析關鍵字結構，不得逐字抄襲）：\n${competitorTitles}` : '',
-    avoidWords      ? `⚠️ 以下詞絕對禁止出現在任何輸出中：${avoidWords}` : ''
+    specs            ? `商品規格：${specs}` : '',
+    targetAudience   ? `適用對象：${targetAudience}` : '',
+    useCase          ? `使用情境：${useCase}` : '',
+    originalTitle    ? `原始商品標題（賣家現有標題，需先分析問題再優化）：${originalTitle}` : '',
+    competitorTitles ? `競品標題參考（只分析關鍵字結構與方向，不得逐字抄襲）：\n${competitorTitles}` : '',
+    avoidWords       ? `⚠️ 絕對禁止出現的詞（標題、關鍵字、描述、標籤全部適用）：${avoidWords}` : ''
   ].filter(Boolean).join('\n');
+
+  const module0Block = originalTitle ? `【模組零：原始標題問題分析】
+
+原始標題：${originalTitle}
+
+問題列表：
+• （問題一：具體說明哪個部分有問題）
+• （問題二）
+• （問題三）
+• （問題四，至少列出 4 個問題）
+
+優化方向：
+• （對應問題一的改善建議）
+• （對應問題二的改善建議）
+• （對應問題三的改善建議）
+• （對應問題四的改善建議）
+
+對照表：
+原始標題問題 | 建議優化方式 | 原因
+（問題一）|（具體改善方式）|（原因說明）
+（問題二）|（具體改善方式）|（原因說明）
+（問題三）|（具體改善方式）|（原因說明）
+（問題四）|（具體改善方式）|（原因說明）
+
+` : '';
 
   return `${ctx}
 
-請依照以下格式輸出全部 6 個模組，不得省略任何區塊，不加說明或評語：
+請依照以下格式輸出全部模組，不得省略任何區塊，不加說明或評語：
 
-【模組一：5 組蝦皮 SEO 標題】
+${module0Block}【模組一：5 組蝦皮 SEO 標題】
 
 --- 標題 1 · 高搜尋曝光版 ---
 標題：（品類詞＋規格詞＋常見搜尋詞，關鍵字完整覆蓋，100 字以內）
@@ -515,19 +546,19 @@ function buildShopeePrompt(productName, category, productFeatures, specs, target
 優點說明：（一句話說明這組標題的優勢）
 
 --- 標題 2 · 高點擊吸引版 ---
-標題：（讓買家一眼看懂用途與好處）
+標題：（讓買家一眼看懂用途與好處，方向明顯不同於標題 1）
 適合用途：有一定曝光後，追求提升點擊率
 關鍵字類型：
 優點說明：
 
 --- 標題 3 · 高轉換銷售版 ---
-標題：（強調痛點解決、購買理由、實用性）
+標題：（強調痛點解決、購買理由、實用性，方向明顯不同於前兩組）
 適合用途：已有流量時，提升轉換率
 關鍵字類型：
 優點說明：
 
 --- 標題 4 · 簡潔質感版 ---
-標題：（不過度堆疊，讓標題有品牌感）
+標題：（不過度堆疊，讓標題有品牌感，風格截然不同）
 適合用途：走質感路線的賣家
 關鍵字類型：
 優點說明：
@@ -549,7 +580,7 @@ function buildShopeePrompt(productName, category, productFeatures, specs, target
 【模組三：商品描述】
 
 開場三行賣點：
-• （第一行，最核心賣點）
+• （第一行，買家最在意的核心好處，不要先說商品名稱）
 • （第二行）
 • （第三行）
 
@@ -562,7 +593,7 @@ function buildShopeePrompt(productName, category, productFeatures, specs, target
 
 商品規格：（條列整理）
 
-下單 CTA：（1-2 句，蝦皮電商語氣，不誇大）
+下單 CTA：（1-2 句，蝦皮電商語氣，不誇大，不違規）
 
 【模組四：建議標籤】
 
@@ -572,7 +603,7 @@ function buildShopeePrompt(productName, category, productFeatures, specs, target
 
 建議測試 A：（引用上方其中一組標題文字）
 建議測試 B：（引用上方其中一組標題文字）
-測試原因：（為什麼選這兩組）
+測試原因：（為什麼選這兩組，它們的方向有什麼不同）
 觀察指標：曝光數、點擊率（CTR）、收藏數、轉換率
 
 【模組六：SEO 檢查清單】

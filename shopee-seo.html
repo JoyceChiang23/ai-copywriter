@@ -39,15 +39,13 @@
 
         .site-header::before {
             content: '';
-            position: absolute;
-            inset: 0;
+            position: absolute; inset: 0;
             background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
 
         .site-header::after {
             content: '';
-            position: absolute;
-            bottom: -2px; left: 0; right: 0;
+            position: absolute; bottom: -2px; left: 0; right: 0;
             height: 48px;
             background: var(--bg);
             border-radius: 50% 50% 0 0 / 100% 100% 0 0;
@@ -85,7 +83,12 @@
 
         .header-subtitle {
             color: rgba(255,255,255,0.6); font-size: 14px;
-            line-height: 1.7; margin-bottom: 24px; max-width: 560px; margin-inline: auto;
+            line-height: 1.7; margin-bottom: 8px; max-width: 560px; margin-inline: auto;
+        }
+
+        .header-tagline {
+            color: rgba(255,255,255,0.38); font-size: 12.5px;
+            margin-bottom: 22px; font-style: italic;
         }
 
         .status-pill {
@@ -132,6 +135,15 @@
             font-size: 13px; flex-shrink: 0;
         }
 
+        .btn-example-sm {
+            margin-left: auto; padding: 4px 11px;
+            border-radius: 6px; font-family: inherit; font-size: 11.5px; font-weight: 600;
+            cursor: pointer; border: 1.5px dashed var(--border);
+            background: white; color: var(--muted); white-space: nowrap;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        .btn-example-sm:hover { border-color: var(--primary); color: var(--primary); background: #fff7ed; border-style: solid; }
+
         /* ── Platform badge ── */
         .platform-fixed {
             display: flex; align-items: center; gap: 8px;
@@ -176,6 +188,17 @@
 
         textarea.form-control { min-height: 88px; resize: vertical; line-height: 1.6; }
 
+        .custom-cat-group { display: none; margin-top: 10px; }
+        .custom-cat-group.show { display: block; }
+
+        /* Divider */
+        .form-divider {
+            margin: 16px 0 0; padding-top: 14px;
+            border-top: 1px dashed var(--border);
+            font-size: 11px; font-weight: 700; color: #d1d5db;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
         /* Optional section */
         .optional-section {
             margin-top: 14px;
@@ -192,13 +215,8 @@
             display: flex; align-items: center; justify-content: space-between;
             transition: background 0.2s;
         }
-
         .optional-toggle:hover { background: #f3f4f6; }
-
-        .optional-toggle .arrow {
-            font-size: 10px; transition: transform 0.2s;
-        }
-
+        .optional-toggle .arrow { font-size: 10px; transition: transform 0.2s; }
         .optional-toggle.open .arrow { transform: rotate(180deg); }
 
         .optional-fields { display: none; padding: 4px 14px 14px; }
@@ -212,13 +230,13 @@
             font-size: 12.5px; color: #9a3412; margin-top: 14px; line-height: 1.5;
         }
 
-        /* ── Button ── */
+        /* ── Buttons ── */
         .btn-generate {
             width: 100%; padding: 14px;
             background: linear-gradient(135deg, #f97316, #ea580c);
             color: white; border: none; border-radius: var(--radius-sm);
             font-family: inherit; font-size: 15px; font-weight: 700;
-            cursor: pointer; margin-top: 18px;
+            cursor: pointer; margin-top: 14px;
             transition: transform 0.2s, box-shadow 0.2s;
         }
         .btn-generate:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(249,115,22,0.35); }
@@ -241,7 +259,6 @@
         /* ── Output column ── */
         .output-col { min-height: 300px; }
 
-        /* Placeholder */
         .output-placeholder {
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
@@ -250,13 +267,11 @@
         .placeholder-icon {
             width: 60px; height: 60px; border-radius: 14px;
             background: linear-gradient(135deg, #fff7ed, #ffedd5);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 26px;
+            display: flex; align-items: center; justify-content: center; font-size: 26px;
         }
         .placeholder-title { font-size: 15px; font-weight: 700; }
         .placeholder-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
 
-        /* Skeleton */
         .output-skeleton { display: none; padding: 24px; }
         .output-skeleton.show { display: block; }
         .sk { height: 13px; background: linear-gradient(90deg,#f5f5f5 25%,#ebebeb 50%,#f5f5f5 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 100px; margin-bottom: 10px; }
@@ -272,9 +287,7 @@
         .output-result { display: none; }
         .output-result.show { display: block; }
 
-        .module-card {
-            border-bottom: 1px solid var(--border);
-        }
+        .module-card { border-bottom: 1px solid var(--border); }
         .module-card:last-child { border-bottom: none; }
 
         .module-header {
@@ -287,8 +300,11 @@
             width: 22px; height: 22px; border-radius: 50%;
             background: linear-gradient(135deg, #f97316, #ea580c);
             color: white; font-size: 10px; font-weight: 800;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+
+        .module-num.analysis {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
         }
 
         .module-title { font-size: 13px; font-weight: 700; color: var(--text); flex: 1; }
@@ -305,7 +321,46 @@
 
         .module-body { padding: 16px 20px; }
 
-        /* Title cards */
+        /* ── Analysis module (M0) ── */
+        #m0Module { display: none; }
+        #m0Module .module-header { background: #fffbeb; border-bottom-color: #fde68a; }
+
+        .orig-title-badge {
+            display: block; background: #fffbeb; border: 1px solid #fde68a;
+            border-radius: var(--radius-sm); padding: 8px 12px;
+            font-size: 12.5px; color: #92400e; margin-bottom: 14px;
+            word-break: break-all; line-height: 1.5;
+        }
+
+        .analysis-section { margin-bottom: 16px; }
+        .analysis-section:last-child { margin-bottom: 0; }
+        .analysis-section-label {
+            font-size: 11px; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+        }
+
+        .analysis-list { list-style: none; }
+        .analysis-list li {
+            padding: 5px 0; border-bottom: 1px solid #f3f4f6;
+            font-size: 13.5px; display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;
+        }
+        .analysis-list li:last-child { border-bottom: none; }
+        .analysis-list li::before { content: '•'; color: var(--primary); font-size: 16px; margin-top: -1px; flex-shrink: 0; }
+
+        .analysis-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+        .analysis-table th {
+            background: #f9fafb; padding: 7px 10px;
+            text-align: left; font-size: 11px; font-weight: 700;
+            color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px;
+            border: 1px solid var(--border);
+        }
+        .analysis-table td {
+            padding: 8px 10px; border: 1px solid var(--border);
+            line-height: 1.5; vertical-align: top;
+        }
+        .analysis-table tr:nth-child(even) td { background: #fafafa; }
+
+        /* ── Title cards ── */
         .title-card {
             background: #fafafa; border: 1.5px solid var(--border);
             border-radius: var(--radius-sm); padding: 12px 14px;
@@ -343,30 +398,19 @@
             border-radius: 6px; padding: 8px 10px;
         }
 
-        .title-meta {
-            display: flex; flex-wrap: wrap; gap: 6px;
-            font-size: 12px; color: var(--muted); line-height: 1.5;
-        }
-
-        .title-meta-item {
-            background: #f3f4f6; border-radius: 4px;
-            padding: 2px 8px; font-size: 11.5px;
-        }
-
+        .title-meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; color: var(--muted); }
+        .title-meta-item { background: #f3f4f6; border-radius: 4px; padding: 2px 8px; font-size: 11.5px; }
         .title-benefit {
-            font-size: 12.5px; color: #9a3412;
-            background: #fff7ed; border-radius: 4px;
-            padding: 3px 8px; margin-top: 6px;
-            display: inline-block;
+            font-size: 12.5px; color: #9a3412; background: #fff7ed;
+            border-radius: 4px; padding: 3px 8px; margin-top: 6px; display: inline-block;
         }
 
-        /* Keyword chips */
+        /* ── Keyword chips ── */
         .kw-category { margin-bottom: 12px; }
         .kw-category:last-child { margin-bottom: 0; }
         .kw-cat-label {
             font-size: 11px; font-weight: 700; color: var(--muted);
-            text-transform: uppercase; letter-spacing: 0.5px;
-            margin-bottom: 6px;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
         }
         .chips { display: flex; flex-wrap: wrap; gap: 5px; }
         .chip {
@@ -378,7 +422,7 @@
         }
         .chip:hover { background: #f97316; color: white; border-color: #f97316; }
 
-        /* Description */
+        /* ── Description / AB / Checklist ── */
         .desc-text {
             font-size: 13.5px; line-height: 1.9; color: var(--text);
             white-space: pre-wrap; word-break: break-word;
@@ -386,7 +430,6 @@
             border-radius: var(--radius-sm); padding: 12px 14px;
         }
 
-        /* AB Test */
         .ab-box {
             background: #fafafa; border: 1.5px solid var(--border);
             border-radius: var(--radius-sm); padding: 12px 14px;
@@ -394,39 +437,42 @@
             white-space: pre-wrap; word-break: break-word;
         }
 
-        /* Checklist */
         .checklist-item {
             display: flex; align-items: flex-start; gap: 8px;
-            padding: 7px 0; border-bottom: 1px solid #f3f4f6;
-            font-size: 13.5px;
+            padding: 7px 0; border-bottom: 1px solid #f3f4f6; font-size: 13.5px;
         }
         .checklist-item:last-child { border-bottom: none; }
         .check-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
         .check-text { flex: 1; line-height: 1.5; }
 
-        /* Copy-all footer */
+        /* ── Result footer ── */
         .result-footer {
-            padding: 14px 20px;
-            border-top: 1px solid var(--border);
-            background: #fafafa;
-            display: flex; gap: 10px;
+            padding: 14px 20px; border-top: 1px solid var(--border);
+            background: #fafafa; display: flex; gap: 10px;
         }
 
         .btn-action {
-            flex: 1; padding: 10px 12px;
-            border-radius: 8px; font-family: inherit;
-            font-size: 13px; font-weight: 600; cursor: pointer;
-            transition: all 0.2s; border: 1.5px solid var(--border);
-            background: white; color: var(--muted);
+            flex: 1; padding: 10px 12px; border-radius: 8px;
+            font-family: inherit; font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            border: 1.5px solid var(--border); background: white; color: var(--muted);
         }
         .btn-action:hover { border-color: var(--primary); color: var(--primary); background: #fff7ed; }
-        .btn-action.primary {
-            background: linear-gradient(135deg, #f97316, #ea580c);
-            color: white; border: none;
-        }
+        .btn-action.primary { background: linear-gradient(135deg, #f97316, #ea580c); color: white; border: none; }
         .btn-action.primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(249,115,22,0.3); color: white; }
 
-        /* Footer */
+        /* ── Disclaimer ── */
+        .disclaimer-box {
+            max-width: 1160px; margin: 0 auto;
+            padding: 0 20px 32px;
+        }
+        .disclaimer-inner {
+            background: #f9fafb; border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 12px 16px;
+            font-size: 12px; color: var(--muted); line-height: 1.7;
+        }
+
+        /* ── Footer ── */
         .site-footer {
             text-align: center; padding: 18px 24px;
             color: #9ca3af; font-size: 12px;
@@ -452,6 +498,7 @@
             輸入商品資訊，產出 5 組蝦皮 SEO 標題、關鍵字分類、商品描述與 A/B 測試建議<br>
             協助整理更清楚的商品上架內容，提升商品被搜尋與點擊的機會
         </p>
+        <p class="header-tagline">適合不知道商品標題怎麼下、關鍵字怎麼放、商品描述怎麼寫的蝦皮賣家</p>
         <div id="statusPill" class="status-pill">
             <span class="dot"></span>
             <span id="statusText">檢查伺服器連線中...</span>
@@ -468,6 +515,7 @@
                 <div class="card-title">
                     <div class="title-icon">📦</div>
                     輸入商品資訊
+                    <button type="button" class="btn-example-sm" onclick="fillExample()">📋 填入範例</button>
                 </div>
             </div>
             <div class="card-body">
@@ -485,8 +533,14 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label">目前商品標題 / 原始標題 <span class="optional-tag">選填</span></label>
+                        <input type="text" id="originalTitle" class="form-control"
+                            placeholder="如果你已經有蝦皮商品標題，可以貼在這裡，AI 會分析原標題問題並提出優化方向" />
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label">商品類別 <span style="color:#ef4444;font-size:13px">*</span></label>
-                        <select id="category" class="form-control" required>
+                        <select id="category" class="form-control" required onchange="onCategoryChange()">
                             <option value="">— 請選擇 —</option>
                             <option value="居家生活">居家生活</option>
                             <option value="女裝/男裝/配件">女裝 / 男裝 / 配件</option>
@@ -498,6 +552,10 @@
                             <option value="文具/辦公">文具 / 辦公</option>
                             <option value="其他">其他</option>
                         </select>
+                        <div class="custom-cat-group" id="customCatGroup">
+                            <input type="text" id="customCategory" class="form-control"
+                                placeholder="例如：香氛選物、水晶飾品、汽機車配件、手作材料、代購商品" />
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -506,42 +564,44 @@
                             placeholder="請列出 3～8 個商品特色，例如：可折疊、不佔空間、女生可搬、適合租屋族、可放筆電與早餐" required></textarea>
                     </div>
 
+                    <div class="form-divider">選填項目（填越詳細，結果越精準）</div>
+
+                    <div class="form-group">
+                        <label class="form-label">商品規格 <span class="optional-tag">選填</span></label>
+                        <textarea id="specs" class="form-control" style="min-height:68px"
+                            placeholder="尺寸、容量、顏色、材質、重量，例如：60cm、奶油白 / 霧灰 / 原木色、鐵製桌腳"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">適用對象 <span class="optional-tag">選填</span></label>
+                        <input type="text" id="targetAudience" class="form-control"
+                            placeholder="例如：租屋族、小套房、學生、上班族、寵物飼主、新手媽媽" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">使用情境 <span class="optional-tag">選填</span></label>
+                        <input type="text" id="useCase" class="form-control"
+                            placeholder="例如：床邊、沙發邊、露營、通勤、辦公桌、送禮、居家收納" />
+                    </div>
+
                     <!-- 進階選填 -->
                     <div class="optional-section">
                         <button type="button" class="optional-toggle" id="optionalToggle" onclick="toggleOptional()">
-                            <span>⚙ 進階選填資訊（填越多，結果越精準）</span>
+                            <span>⚙ 進階設定：競品標題 / 想避開的詞</span>
                             <span class="arrow">▼</span>
                         </button>
                         <div class="optional-fields" id="optionalFields">
 
                             <div class="form-group">
-                                <label class="form-label">商品規格 <span class="optional-tag">選填</span></label>
-                                <textarea id="specs" class="form-control" style="min-height:72px"
-                                    placeholder="尺寸、容量、顏色、材質、重量、數量，例如：60cm、奶油白 / 霧灰 / 原木色、鐵製桌腳"></textarea>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">適用對象 <span class="optional-tag">選填</span></label>
-                                <input type="text" id="targetAudience" class="form-control"
-                                    placeholder="例如：租屋族、小套房、學生、上班族、寵物飼主、新手媽媽" />
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">使用情境 <span class="optional-tag">選填</span></label>
-                                <input type="text" id="useCase" class="form-control"
-                                    placeholder="例如：床邊、沙發邊、露營、通勤、辦公桌、送禮、居家收納" />
-                            </div>
-
-                            <div class="form-group">
                                 <label class="form-label">競品標題參考 <span class="optional-tag">選填</span></label>
                                 <textarea id="competitorTitles" class="form-control" style="min-height:80px"
-                                    placeholder="可貼上蝦皮同類商品標題，AI 會參考常見關鍵字結構，但不會直接抄襲"></textarea>
+                                    placeholder="可貼上蝦皮同類商品標題，AI 會參考關鍵字結構，不會直接抄襲"></textarea>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">想避開的詞 <span class="optional-tag">選填</span></label>
                                 <input type="text" id="avoidWords" class="form-control"
-                                    placeholder="例如：不要寫北歐、不要寫工業風、不要寫第一名、不要寫最便宜" />
+                                    placeholder="例如：北歐風、懶人桌、最便宜、必買（這些詞將完全不出現在結果中）" />
                             </div>
 
                         </div>
@@ -555,7 +615,7 @@
                     <div id="successMsg" class="msg msg-success"></div>
 
                     <div class="tip-box">
-                        💡 商品特色填越詳細，標題與關鍵字越精準，建議至少填 3 個以上的賣點
+                        💡 「目前商品標題」欄位可選填：填了之後，AI 會分析你原本標題的問題，並對照優化後的版本，方便你直接比較
                     </div>
 
                 </form>
@@ -595,6 +655,16 @@
 
                 <!-- Result -->
                 <div class="output-result" id="outputResult">
+
+                    <!-- M0: 原始標題問題分析（條件顯示） -->
+                    <div class="module-card" id="m0Module">
+                        <div class="module-header">
+                            <div class="module-num analysis">分</div>
+                            <div class="module-title">原始標題問題分析</div>
+                            <button class="btn-copy-module" onclick="copyModuleText('m0Text', this)">複製</button>
+                        </div>
+                        <div class="module-body" id="analysisContainer"></div>
+                    </div>
 
                     <!-- M1: Titles -->
                     <div class="module-card">
@@ -657,6 +727,7 @@
                         <div class="module-header">
                             <div class="module-num">6</div>
                             <div class="module-title">SEO 檢查清單</div>
+                            <button class="btn-copy-module" onclick="copyModuleText('m6Text', this)">複製</button>
                         </div>
                         <div class="module-body">
                             <div id="checklistContainer"></div>
@@ -675,16 +746,24 @@
     </div>
 </main>
 
+<div class="disclaimer-box">
+    <div class="disclaimer-inner">
+        ⚠️ AI 會協助整理標題與關鍵字，但請確認所有描述都符合商品實際狀況。請避免使用與商品無關的熱門關鍵字，以免影響買家信任或平台審核。
+    </div>
+</div>
+
 <footer class="site-footer">
-    蝦皮 SEO 優化器 &nbsp;·&nbsp; <a href="/">也試試 AI 文案生成器</a> &nbsp;·&nbsp; 由 AI 生成，建議自行確認關鍵字是否符合商品實際狀況
+    蝦皮 SEO 優化器 &nbsp;·&nbsp; <a href="/">也試試 AI 文案生成器</a> &nbsp;·&nbsp; 由 AI 生成，請自行確認關鍵字是否符合商品實際狀況
 </footer>
 
-<!-- Hidden text stores for copy -->
+<!-- Hidden text for copy -->
+<textarea id="m0Text" style="display:none"></textarea>
 <textarea id="m1Text" style="display:none"></textarea>
 <textarea id="m2Text" style="display:none"></textarea>
 <textarea id="m3Text" style="display:none"></textarea>
 <textarea id="m4Text" style="display:none"></textarea>
 <textarea id="m5Text" style="display:none"></textarea>
+<textarea id="m6Text" style="display:none"></textarea>
 <textarea id="allText" style="display:none"></textarea>
 
 <script>
@@ -707,12 +786,40 @@
         t.textContent = '無法連接伺服器';
     }
 
+    // 商品類別 change
+    function onCategoryChange() {
+        const val   = document.getElementById('category').value;
+        const grp   = document.getElementById('customCatGroup');
+        const input = document.getElementById('customCategory');
+        if (val === '其他') { grp.classList.add('show'); input.focus(); }
+        else               { grp.classList.remove('show'); input.value = ''; }
+    }
+
     // 進階選填 toggle
     function toggleOptional() {
-        const btn    = document.getElementById('optionalToggle');
-        const fields = document.getElementById('optionalFields');
-        btn.classList.toggle('open');
-        fields.classList.toggle('open');
+        document.getElementById('optionalToggle').classList.toggle('open');
+        document.getElementById('optionalFields').classList.toggle('open');
+    }
+
+    // 一鍵填入範例
+    function fillExample() {
+        document.getElementById('productName').value    = '小坪數可折疊收納邊桌';
+        document.getElementById('originalTitle').value  = '可折疊床邊桌 小茶几 沙發邊桌 懶人桌 筆電桌';
+        document.getElementById('category').value       = '居家生活';
+        onCategoryChange();
+        document.getElementById('productFeatures').value =
+            '可折疊、不佔空間、適合租屋族、小套房、沙發邊、床邊使用。桌面可放筆電、早餐、咖啡、書本。重量輕，女生也能輕鬆移動。顏色有奶油白、霧灰、原木色。';
+        document.getElementById('specs').value          =
+            '桌面寬 60cm，高度 72cm，顏色有奶油白、霧灰、原木色，輕量鐵製桌腳，可折疊收納。';
+        document.getElementById('targetAudience').value =
+            '租屋族、小套房住戶、學生、上班族、需要臨時工作桌的人。';
+        document.getElementById('useCase').value        =
+            '床邊桌、沙發邊桌、筆電桌、早餐桌、咖啡桌、臨時工作桌。';
+        document.getElementById('optionalToggle').classList.add('open');
+        document.getElementById('optionalFields').classList.add('open');
+        document.getElementById('competitorTitles').value =
+            '可折疊床邊桌 小茶几 沙發邊桌 懶人桌 筆電桌\n小戶型折疊桌 租屋族收納桌 床上桌 邊桌\n北歐風小邊桌 可移動筆電桌 沙發桌';
+        document.getElementById('avoidWords').value     = '北歐風、懶人桌、最便宜、必買';
     }
 
     // 表單送出
@@ -720,7 +827,9 @@
         e.preventDefault();
 
         const productName      = document.getElementById('productName').value.trim();
+        const originalTitle    = document.getElementById('originalTitle').value.trim();
         const category         = document.getElementById('category').value;
+        const customCategory   = document.getElementById('customCategory').value.trim();
         const productFeatures  = document.getElementById('productFeatures').value.trim();
         const specs            = document.getElementById('specs').value.trim();
         const targetAudience   = document.getElementById('targetAudience').value.trim();
@@ -746,13 +855,17 @@
             const res  = await fetch(`${API_BASE}/api/shopee-seo`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productName, category, productFeatures, specs, targetAudience, useCase, competitorTitles, avoidWords })
+                body: JSON.stringify({
+                    productName, originalTitle, category, customCategory,
+                    productFeatures, specs, targetAudience, useCase,
+                    competitorTitles, avoidWords
+                })
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || '生成失敗');
 
             rawOutput = data.result;
-            renderResult(data.result);
+            renderResult(data.result, !!originalTitle);
 
             successMsg.textContent = '✅ 優化完成！點擊各標題旁的複製按鈕可直接使用';
             successMsg.classList.add('show');
@@ -770,11 +883,20 @@
 
     // ── 解析與渲染 ──
 
-    function renderResult(text) {
+    function renderResult(text, hasOriginalTitle) {
         document.getElementById('outputSkeleton').className = 'output-skeleton';
         document.getElementById('outputResult').className = 'output-result show';
 
         const mods = parseModules(text);
+
+        // M0: 原始標題問題分析（條件顯示）
+        const analysisText = mods['零'] || mods['0'] || '';
+        if (hasOriginalTitle && analysisText) {
+            renderAnalysis(analysisText);
+            document.getElementById('m0Module').style.display = 'block';
+        } else {
+            document.getElementById('m0Module').style.display = 'none';
+        }
 
         renderTitles(mods['一'] || mods['1'] || '');
         renderKeywords(mods['二'] || mods['2'] || '');
@@ -783,18 +905,85 @@
         renderAB(mods['五'] || mods['5'] || '');
         renderChecklist(mods['六'] || mods['6'] || '');
 
-        // Store for copy-all
         document.getElementById('allText').value = text;
     }
 
     function parseModules(text) {
         const result = {};
-        const regex = /【模組([一二三四五六\d]+)[：:][^】]*】\s*([\s\S]*?)(?=【模組[一二三四五六\d]+[：:]|$)/g;
+        const regex = /【模組([零一二三四五六\d]+)[：:][^】]*】\s*([\s\S]*?)(?=【模組[零一二三四五六\d]+[：:]|$)/g;
         let m;
         while ((m = regex.exec(text)) !== null) {
             result[m[1].trim()] = m[2].trim();
         }
         return result;
+    }
+
+    // Module 0: 原始標題問題分析
+    function renderAnalysis(text) {
+        const container = document.getElementById('analysisContainer');
+        document.getElementById('m0Text').value = text;
+
+        let html = '';
+
+        // 顯示原始標題
+        const origMatch = text.match(/原始標題[：:]\s*(.+)/);
+        if (origMatch) {
+            html += `<div class="orig-title-badge">🔍 分析標題：${esc(origMatch[1].trim())}</div>`;
+        }
+
+        // 問題列表
+        const probMatch = text.match(/問題列表[：:]\s*([\s\S]*?)(?=優化方向[：:]|對照表[：:]|$)/);
+        if (probMatch) {
+            const probs = probMatch[1].trim().split('\n')
+                .map(l => l.replace(/^[•\-·*\d\.、]\s*/, '').trim())
+                .filter(l => l.length > 2);
+            if (probs.length) {
+                html += `<div class="analysis-section">
+                    <div class="analysis-section-label">發現的問題</div>
+                    <ul class="analysis-list">
+                    ${probs.map(p => `<li>${esc(p)}</li>`).join('')}
+                    </ul></div>`;
+            }
+        }
+
+        // 優化方向
+        const suggestMatch = text.match(/優化方向[：:]\s*([\s\S]*?)(?=對照表[：:]|$)/);
+        if (suggestMatch) {
+            const suggests = suggestMatch[1].trim().split('\n')
+                .map(l => l.replace(/^[•\-·*\d\.、]\s*/, '').trim())
+                .filter(l => l.length > 2);
+            if (suggests.length) {
+                html += `<div class="analysis-section">
+                    <div class="analysis-section-label">優化方向</div>
+                    <ul class="analysis-list">
+                    ${suggests.map(s => `<li>${esc(s)}</li>`).join('')}
+                    </ul></div>`;
+            }
+        }
+
+        // 對照表
+        const tableMatch = text.match(/對照表[：:]\s*([\s\S]*?)$/);
+        if (tableMatch) {
+            const rows = tableMatch[1].trim().split('\n')
+                .filter(l => l.includes('|') && l.replace(/[|\-\s]/g, '').length > 0);
+            if (rows.length >= 2) {
+                const headerCells = rows[0].split('|').map(c => c.trim()).filter(c => c);
+                const dataRows = rows.slice(1).filter(r => !r.replace(/[|\-\s]/g, '').match(/^-+$/));
+                if (headerCells.length >= 2 && dataRows.length > 0) {
+                    html += `<div class="analysis-section">
+                        <div class="analysis-section-label">對照表</div>
+                        <table class="analysis-table">
+                        <tr>${headerCells.map(c => `<th>${esc(c)}</th>`).join('')}</tr>
+                        ${dataRows.map(row => {
+                            const cells = row.split('|').map(c => c.trim()).filter(c => c);
+                            return cells.length >= 2 ? `<tr>${cells.map(c => `<td>${esc(c)}</td>`).join('')}</tr>` : '';
+                        }).join('')}
+                        </table></div>`;
+                }
+            }
+        }
+
+        container.innerHTML = html || `<div class="desc-text">${esc(text)}</div>`;
     }
 
     // Module 1: Titles
@@ -803,21 +992,19 @@
         container.innerHTML = '';
 
         const titleTypes = ['高搜尋曝光版','高點擊吸引版','高轉換銷售版','簡潔質感版','長尾關鍵字版'];
-        const sections   = text.split(/---\s*標題\s*\d+\s*[··•]\s*/);
         const headers    = [...text.matchAll(/---\s*標題\s*(\d+)\s*[··•]\s*([^-]+?)\s*---/g)];
+        const sections   = text.split(/---\s*標題\s*\d+\s*[··•]\s*/);
 
         let titleTextsForCopy = [];
 
         if (headers.length > 0) {
             headers.forEach((hdr, i) => {
-                const typeLabel = hdr[2].trim() || titleTypes[i] || `標題 ${hdr[1]}`;
-                const body = sections[i + 1] ? sections[i + 1].split('---')[0].trim() : '';
-
-                const titleLine  = (body.match(/^標題[：:]\s*(.+)/m) || [])[1]?.trim() || '';
-                const usageLine  = (body.match(/適合用途[：:]\s*(.+)/m) || [])[1]?.trim() || '';
-                const kwLine     = (body.match(/關鍵字類型[：:]\s*(.+)/m) || [])[1]?.trim() || '';
-                const benefit    = (body.match(/優點說明[：:]\s*(.+)/m) || [])[1]?.trim() || '';
-
+                const typeLabel    = hdr[2].trim() || titleTypes[i] || `標題 ${hdr[1]}`;
+                const body         = sections[i + 1] ? sections[i + 1].split('---')[0].trim() : '';
+                const titleLine    = (body.match(/^標題[：:]\s*(.+)/m) || [])[1]?.trim() || '';
+                const usageLine    = (body.match(/適合用途[：:]\s*(.+)/m) || [])[1]?.trim() || '';
+                const kwLine       = (body.match(/關鍵字類型[：:]\s*(.+)/m) || [])[1]?.trim() || '';
+                const benefit      = (body.match(/優點說明[：:]\s*(.+)/m) || [])[1]?.trim() || '';
                 const displayTitle = titleLine || body.split('\n')[0]?.replace(/^標題[：:]?\s*/, '').trim();
                 titleTextsForCopy.push(displayTitle);
 
@@ -836,7 +1023,6 @@
                 </div>`;
             });
         } else {
-            // Fallback: numbered list
             const lines = text.split('\n').filter(l => /^\d+[\.、]/.test(l.trim()));
             if (lines.length > 0) {
                 lines.forEach((line, i) => {
@@ -875,26 +1061,19 @@
 
         let allKwText = '';
         cats.forEach(cat => {
-            const regex = new RegExp(`${cat.key}[：:]\\s*(.+)`, 'm');
-            const m = text.match(regex);
+            const rx = new RegExp(`${cat.key}[：:]\\s*(.+)`, 'm');
+            const m  = text.match(rx);
             if (!m) return;
             const words = m[1].split(/[、,，]/).map(w => w.trim()).filter(Boolean);
             if (!words.length) return;
-
             allKwText += `${cat.label}：${words.join('、')}\n`;
-
             let html = `<div class="kw-category"><div class="kw-cat-label">${cat.label}</div><div class="chips">`;
-            words.forEach(w => {
-                html += `<span class="chip" onclick="copyText(this,'${escAttr(w)}')">${esc(w)}</span>`;
-            });
+            words.forEach(w => { html += `<span class="chip" onclick="copyText(this,'${escAttr(w)}')">${esc(w)}</span>`; });
             html += `</div></div>`;
             container.innerHTML += html;
         });
 
-        if (!container.innerHTML) {
-            container.innerHTML = `<div class="desc-text">${esc(text)}</div>`;
-        }
-
+        if (!container.innerHTML) container.innerHTML = `<div class="desc-text">${esc(text)}</div>`;
         document.getElementById('m2Text').value = allKwText;
     }
 
@@ -909,9 +1088,7 @@
         const container = document.getElementById('tagsContainer');
         container.innerHTML = '';
         const tags = text.split(/[、,，\n]/).map(t => t.replace(/^\d+[\.、]\s*/, '').trim()).filter(Boolean);
-        tags.forEach(tag => {
-            container.innerHTML += `<span class="chip" onclick="copyText(this,'${escAttr(tag)}')">${esc(tag)}</span>`;
-        });
+        tags.forEach(tag => { container.innerHTML += `<span class="chip" onclick="copyText(this,'${escAttr(tag)}')">${esc(tag)}</span>`; });
         if (!tags.length) container.innerHTML = `<div class="desc-text">${esc(text)}</div>`;
         document.getElementById('m4Text').value = tags.join('、');
     }
@@ -928,10 +1105,12 @@
         container.innerHTML = '';
         const lines = text.split('\n').filter(l => l.includes('✅') || l.includes('❌') || l.includes('✓') || l.includes('✗'));
 
+        let copyText = '';
         if (lines.length > 0) {
             lines.forEach(line => {
-                const passed = line.includes('✅') || line.includes('✓');
+                const passed    = line.includes('✅') || line.includes('✓');
                 const cleanText = line.replace(/^[✅❌✓✗]\s*/, '').trim();
+                copyText += `${passed ? '✅' : '❌'} ${cleanText}\n`;
                 container.innerHTML += `
                 <div class="checklist-item">
                     <span class="check-icon">${passed ? '✅' : '❌'}</span>
@@ -939,8 +1118,10 @@
                 </div>`;
             });
         } else {
+            copyText = text;
             container.innerHTML = `<div style="font-size:13.5px;line-height:1.8;white-space:pre-wrap">${esc(text)}</div>`;
         }
+        document.getElementById('m6Text').value = copyText;
     }
 
     // ── Copy functions ──
