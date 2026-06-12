@@ -633,7 +633,7 @@
                     <p class="placeholder-desc">
                         填入商品資訊後，AI 將產出<br>
                         5 組 SEO 標題、關鍵字分類、商品描述<br>
-                        A/B 測試建議與 SEO 檢查清單
+                        A/B 測試建議與本次優化重點
                     </p>
                 </div>
 
@@ -726,7 +726,7 @@
                     <div class="module-card">
                         <div class="module-header">
                             <div class="module-num">6</div>
-                            <div class="module-title">SEO 檢查清單</div>
+                            <div class="module-title">本次優化重點</div>
                             <button class="btn-copy-module" onclick="copyModuleText('m6Text', this)">複製</button>
                         </div>
                         <div class="module-body">
@@ -925,7 +925,7 @@
 
         const m6 = mods['六'] || mods['6'] || '';
         renderChecklist(m6);
-        if (m6) fmtParts.push('【模組六：SEO 檢查清單】\n\n' + m6);
+        if (m6) fmtParts.push('【模組六：本次優化重點】\n\n' + m6);
 
         formattedOutput = fmtParts.filter(Boolean).join('\n\n---\n\n');
         document.getElementById('allText').value = formattedOutput;
@@ -1208,29 +1208,31 @@
         document.getElementById('m5Text').value = text;
     }
 
-    // Module 6: Checklist
+    // Module 6: 本次優化重點（條列式，不再用 ✅/❌ 檢查格式）
     function renderChecklist(text) {
         const container = document.getElementById('checklistContainer');
         container.innerHTML = '';
-        const lines = text.split('\n').filter(l => l.includes('✅') || l.includes('❌') || l.includes('✓') || l.includes('✗'));
+
+        // 解析數字條列（1. 已... / 2. 已...）
+        const items = text.split('\n')
+            .map(l => l.replace(/^\d+[.、]\s*/, '').trim())
+            .filter(Boolean);
 
         let copyText = '';
-        if (lines.length > 0) {
-            lines.forEach(line => {
-                const passed    = line.includes('✅') || line.includes('✓');
-                const cleanText = line.replace(/^[✅❌✓✗]\s*/, '').trim();
-                copyText += `${passed ? '✅' : '❌'} ${cleanText}\n`;
+        if (items.length > 0) {
+            items.forEach((item, i) => {
+                copyText += `${i + 1}. ${item}\n`;
                 container.innerHTML += `
                 <div class="checklist-item">
-                    <span class="check-icon">${passed ? '✅' : '❌'}</span>
-                    <span class="check-text">${esc(cleanText)}</span>
+                    <span class="check-icon" style="color:#16a34a">✅</span>
+                    <span class="check-text">${esc(item)}</span>
                 </div>`;
             });
         } else {
             copyText = text;
             container.innerHTML = `<div style="font-size:13.5px;line-height:1.8;white-space:pre-wrap">${esc(text)}</div>`;
         }
-        document.getElementById('m6Text').value = copyText;
+        document.getElementById('m6Text').value = copyText.trim();
     }
 
     // ── Copy functions ──
